@@ -1,0 +1,6 @@
+.idea/
+.venv
+*.json
+*.yaml
+*.bat
+*.iml

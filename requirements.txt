@@ -1,0 +1,29 @@
+# 基础依赖
+requests>=2.32.4
+urllib3>=1.26.20,<3.0.0
+contextvars>=2.4
+
+# 可选依赖 - 火山引擎 TLS 支持
+# 注意：需要从GitHub安装包含TLS服务的SDK
+# git+https://github.com/volcengine/volc-sdk-python.git
+volcengine>=1.0.184
+# LZ4压缩库（火山引擎TLS必需）
+lz4>=4.0.0
+
+# 可选依赖 - Web 框架支持
+fastapi>=0.68.0
+uvicorn>=0.15.0
+flask>=2.0.0
+django>=3.2.0
+tornado>=6.0.0
+
+# 可选依赖 - 环境变量支持
+python-dotenv>=0.19.0
+
+# 开发依赖
+pytest>=6.0.0
+pytest-asyncio>=0.18.0
+pytest-cov>=2.12.0
+black>=21.0.0
+flake8>=3.9.0
+mypy>=0.910 
