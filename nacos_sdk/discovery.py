@@ -2,8 +2,8 @@ import logging
 import random
 from typing import Dict, Any, List, Optional, Tuple, Callable, Union
 
-from nacos_sdk.client import get_nacos_client
-from nacos_sdk.exceptions import NacosException
+from .client import get_nacos_client
+from .exceptions import NacosException
 
 logger = logging.getLogger("nacos-discovery")
 

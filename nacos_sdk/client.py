@@ -7,7 +7,7 @@ import os
 from typing import Dict, Any, Optional, List, Union
 import requests
 
-from nacos_sdk.exceptions import NacosException
+from .exceptions import NacosException
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("nacos-client")

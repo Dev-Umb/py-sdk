@@ -6,7 +6,7 @@ Nacos配置获取API使用示例
 这个示例展示了如何使用nacos.api模块来获取配置
 """
 
-from nacos_sdk import get_config
+from . import get_config
 
 def main():
     """主函数，演示配置获取"""

@@ -20,7 +20,7 @@
     >>> trace_id = get_trace_id()
 """
 
-from context.manager import (
+from .manager import (
     Context,
     create_context,
     get_current_context,

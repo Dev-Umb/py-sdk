@@ -13,8 +13,8 @@ import requests
 from requests.adapters import HTTPAdapter
 
 from context.manager import get_current_context
-from http_client.response import APIResponse
-from http_client.code import INTERNAL_SERVER_ERROR
+from .response import APIResponse
+from .code import INTERNAL_SERVER_ERROR
 from nacos_sdk.api import get_config
 
 # 安全导入 urllib3
@@ -166,7 +166,7 @@ class HttpClient:
     
     def _parse_response(self, response: requests.Response) -> APIResponse:
         """解析响应"""
-        from http_client.code import OK
+        from .code import OK
         
         try:
             # 尝试解析 JSON

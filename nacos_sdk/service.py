@@ -3,9 +3,9 @@ import signal
 import atexit
 from typing import Dict, Any, List, Optional, Tuple, Callable
 
-from nacos_sdk.client import registerNacos, unregisterNacos, get_local_ip
-from nacos_sdk.config import get_config
-from nacos_sdk.utils import get_service_metadata
+from .client import registerNacos, unregisterNacos, get_local_ip
+from .config import get_config
+from .utils import get_service_metadata
 
 logger = logging.getLogger("nacos-service")
 
@@ -24,7 +24,7 @@ class ServiceManager:
         Returns:
             初始化是否成功
         """
-        from nacos_sdk.config import load_config
+        from .config import load_config
         
         # 加载配置
         if not load_config():
