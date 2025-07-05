@@ -96,7 +96,7 @@ def test_nacos_with_env():
     print("\n🎯 测试 Nacos 环境变量配置:")
     
     try:
-        from nacos.client import NacosClient
+        from nacos_sdk.client import NacosClient
         
         # 使用环境变量创建客户端
         client = NacosClient()

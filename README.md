@@ -8,7 +8,7 @@
 - **📋 统一日志**: 自动包含 TraceID 的结构化日志，支持火山引擎 TLS
 - **🌐 HTTP 客户端**: 标准化的 HTTP 请求和响应处理
 - **🔗 上下文管理**: 自动 TraceID 传递，支持异步安全
-- **🎯 服务发现**: 基于 Nacos 的服务注册与发现
+- **🎯 服务发现**: 基于 Nacos SDK 的服务注册与发现
 - **📊 可观测性**: 完整的链路追踪和日志聚合
 
 ## 📦 快速安装
@@ -65,7 +65,7 @@ logger.info(ctx, "服务启动成功")
 from context import create_context
 from logger import init_logger_manager, get_logger
 from http_client import create_response, ResponseCode
-from nacos import registerNacos
+from nacos_sdk import registerNacos
 
 # 1. 初始化日志（支持火山引擎 TLS）
 init_logger_manager(
@@ -114,7 +114,7 @@ response = create_response(
 - **作用**: 标准化的 HTTP 请求处理和响应格式
 - **核心功能**: 统一响应格式，中间件支持，错误处理
 
-### 4. 服务发现 (nacos)
+### 4. 服务发现 (nacos_sdk)
 - **作用**: 基于 Nacos 的配置管理和服务注册发现
 - **核心功能**: 配置热更新，服务注册，健康检查
 
@@ -216,7 +216,7 @@ python examples/nacos_connection_example.py
 - **[上下文管理](./docs/context.md)** - TraceID 和上下文管理
 - **[日志管理](./docs/logger.md)** - 日志记录和火山引擎 TLS 集成
 - **[HTTP 客户端](./docs/http_client.md)** - HTTP 请求和响应处理
-- **[Nacos 服务发现](./docs/nacos.md)** - 配置管理和服务注册发现
+- **[Nacos SDK 服务发现](./docs/nacos.md)** - 配置管理和服务注册发现
 - **[配置管理指南](./docs/config.md)** - 配置文件和环境变量
 - **[常见问题解答](./docs/faq.md)** - 问题排查和解决方案
 

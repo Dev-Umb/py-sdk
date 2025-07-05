@@ -14,8 +14,8 @@ sys.path.insert(0, '.')
 
 from context.manager import create_context, set_context
 from logger import init_logger_manager, get_logger
-from nacos.client import NacosClient
-from nacos.api import get_config
+from nacos_sdk.client import NacosClient
+from nacos_sdk.api import get_config
 
 
 def setup_nacos_environment():

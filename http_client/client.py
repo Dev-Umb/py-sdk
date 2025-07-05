@@ -15,7 +15,7 @@ from requests.adapters import HTTPAdapter
 from context.manager import get_current_context
 from http_client.response import APIResponse
 from http_client.code import INTERNAL_SERVER_ERROR
-from nacos.api import get_config
+from nacos_sdk.api import get_config
 
 # 安全导入 urllib3
 try:

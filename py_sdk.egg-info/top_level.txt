@@ -1,4 +1,4 @@
 context
 http_client
 logger
-nacos
+nacos_sdk

@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.insert(0, '..')
 
-from nacos.client import NacosClient, init_nacos_client
+from nacos_sdk.client import NacosClient, init_nacos_client
 
 def test_env_vars():
     """测试环境变量配置"""

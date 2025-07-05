@@ -67,7 +67,7 @@ def main():
         from context import create_context
         from logger import get_logger, init_logger_manager
         from http_client import create_response, BusinessCode, HttpClient
-        from nacos import registerNacos, get_config
+        from nacos_sdk import registerNacos, get_config
         
         # 1. 初始化日志管理器
         init_logger_manager(
@@ -94,7 +94,7 @@ def main():
             code=BusinessCode.OK, 
             data={
                 "sdk_version": "1.0.0",
-                "features": ["logging", "http", "context", "nacos"],
+                "features": ["logging", "http", "context", "nacos_sdk"],
                 "status": "ready"
             }
         )

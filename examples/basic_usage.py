@@ -19,8 +19,8 @@ from logger import init_logger_manager, get_logger
 from http_client.response import create_response
 from http_client.client import HttpClient
 from http_client.code import OK, INVALID_PARAMS, ROOM_NOT_FOUND, INTERNAL_SERVER_ERROR
-from nacos.api import get_config
-from nacos.client import NacosClient
+from nacos_sdk.api import get_config
+from nacos_sdk.client import NacosClient
 
 
 def setup_nacos_environment():

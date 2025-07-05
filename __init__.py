@@ -61,7 +61,7 @@ from http_client import (
     create_django_middleware
 )
 
-from nacos import (
+from nacos_sdk import (
     registerNacos,
     unregisterNacos,
     init_nacos_client,
@@ -109,7 +109,7 @@ __all__ = [
     "create_flask_middleware",
     "create_django_middleware",
     
-    # Nacos 服务发现
+    # Nacos SDK 服务发现
     "registerNacos",
     "unregisterNacos",
     "init_nacos_client",

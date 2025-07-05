@@ -105,7 +105,8 @@ pip install py-sdk[all]
 ### 最简使用（3行代码）
 
 ```python
-from py_sdk import create_context, get_logger
+from context import create_context
+from logger import get_logger
 
 # 创建上下文（自动生成 TraceID）
 ctx = create_context()
@@ -120,10 +121,10 @@ logger.info(ctx, "服务启动成功")
 ### 完整功能使用
 
 ```python
-from py_sdk import (
-    create_context, init_logger_manager, get_logger,
-    create_response, ResponseCode, registerNacos
-)
+from context import create_context
+from logger import init_logger_manager, get_logger
+from http_client import create_response, ResponseCode
+from nacos_sdk import registerNacos
 
 # 1. 初始化日志（支持火山引擎 TLS）
 init_logger_manager(

@@ -162,11 +162,13 @@ python examples/fastapi_example.py
 from context import create_context
 from logger import get_logger
 from http_client import create_response
+from nacos_sdk import registerNacos
 
 # 或者：导入整个模块
 import context
 import logger
 import http_client
+import nacos_sdk
 ```
 
 ### 在其他项目中使用

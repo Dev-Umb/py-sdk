@@ -128,7 +128,7 @@ class TLSHandler(logging.Handler):
         
         # 尝试从 Nacos 获取火山引擎配置（使用新的 dataID）
         try:
-            from nacos.api import get_config
+            from nacos_sdk.api import get_config
             import json
             
             # 首先尝试从 tls.log.config 获取配置
@@ -350,7 +350,7 @@ class LoggerManager:
     def _load_volcengine_config(self):
         """加载火山引擎配置"""
         try:
-            from nacos.api import get_config
+            from nacos_sdk.api import get_config
             import json
             
             # 首先尝试从 tls.log.config 获取配置

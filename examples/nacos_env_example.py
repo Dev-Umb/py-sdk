@@ -8,7 +8,7 @@ Nacos环境变量配置示例
 
 import os
 import time
-from nacos import registerNacos, unregisterNacos, init_nacos_client
+from nacos_sdk import registerNacos, unregisterNacos, init_nacos_client
 
 def example_with_env_vars():
     """使用环境变量配置的示例"""

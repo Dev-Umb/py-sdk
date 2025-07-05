@@ -74,7 +74,7 @@ Changelog = "https://github.com/your-org/py-sdk/blob/main/CHANGELOG.md"
 py-sdk-setup = "py_sdk.scripts.setup:main"
 
 [tool.setuptools]
-packages = ["context", "logger", "http_client", "nacos"]
+packages = ["context", "logger", "http_client", "nacos_sdk"]
 include-package-data = true
 
 [tool.setuptools.package-data]
@@ -125,7 +125,7 @@ addopts = [
     "--cov=context",
     "--cov=logger", 
     "--cov=http_client",
-    "--cov=nacos",
+    "--cov=nacos_sdk",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",

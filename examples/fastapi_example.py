@@ -24,8 +24,8 @@ from logger import init_logger_manager, get_logger
 from http_client.response import create_response
 from http_client.code import ROOM_NOT_FOUND, INVALID_PARAMS, UNAUTHORIZED, INTERNAL_SERVER_ERROR
 from http_client.middleware import create_fastapi_middleware
-from nacos.api import get_config
-from nacos.client import NacosClient
+from nacos_sdk.api import get_config
+from nacos_sdk.client import NacosClient
 
 
 # 数据模型
