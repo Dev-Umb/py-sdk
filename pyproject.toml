@@ -1,0 +1,137 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-sdk"
+version = "1.0.0"
+description = "Python 微服务通用 SDK - 提供统一的日志管理、HTTP 客户端、上下文管理和服务注册发现等功能"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Team", email = "your-email@example.com"}
+]
+maintainers = [
+    {name = "Your Team", email = "your-email@example.com"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8", 
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Logging",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: System :: Distributed Computing",
+]
+keywords = ["microservice", "sdk", "logging", "http", "nacos", "context", "tracing"]
+requires-python = ">=3.7"
+dependencies = [
+    "requests>=2.32.4",
+    "urllib3>=1.26.20,<3.0.0",
+    "contextvars>=2.4",
+    "python-dotenv>=0.19.0",
+]
+
+[project.optional-dependencies]
+tls = [
+    "volcengine>=1.0.184",
+    "lz4>=4.0.0",
+]
+web = [
+    "fastapi>=0.68.0",
+    "uvicorn>=0.15.0",
+    "flask>=2.0.0",
+    "django>=3.2.0",
+    "tornado>=6.0.0",
+]
+dev = [
+    "pytest>=6.0.0",
+    "pytest-asyncio>=0.18.0",
+    "pytest-cov>=2.12.0",
+    "black>=21.0.0",
+    "flake8>=3.9.0",
+    "mypy>=0.910",
+]
+all = [
+    "py-sdk[tls,web,dev]"
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/py-sdk"
+Documentation = "https://github.com/your-org/py-sdk/blob/main/docs/README.md"
+Repository = "https://github.com/your-org/py-sdk"
+"Bug Reports" = "https://github.com/your-org/py-sdk/issues"
+Changelog = "https://github.com/your-org/py-sdk/blob/main/CHANGELOG.md"
+
+[project.scripts]
+py-sdk-setup = "py_sdk.scripts.setup:main"
+
+[tool.setuptools]
+packages = ["context", "logger", "http_client", "nacos"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt", "*.json", "*.yaml", "*.yml"]
+
+[tool.black]
+line-length = 100
+target-version = ["py37", "py38", "py39", "py310", "py311"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov=context",
+    "--cov=logger", 
+    "--cov=http_client",
+    "--cov=nacos",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+] 

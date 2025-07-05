@@ -1,3 +1,62 @@
+Metadata-Version: 2.4
+Name: py-sdk
+Version: 1.0.0
+Summary: Python 微服务通用 SDK - 提供统一的日志管理、HTTP 客户端、上下文管理和服务注册发现等功能
+Home-page: https://github.com/your-org/py-sdk
+Author: Your Team
+Author-email: Your Team <your-email@example.com>
+Maintainer-email: Your Team <your-email@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/your-org/py-sdk
+Project-URL: Documentation, https://github.com/your-org/py-sdk/blob/main/docs/README.md
+Project-URL: Repository, https://github.com/your-org/py-sdk
+Project-URL: Bug Reports, https://github.com/your-org/py-sdk/issues
+Project-URL: Changelog, https://github.com/your-org/py-sdk/blob/main/CHANGELOG.md
+Keywords: microservice,sdk,logging,http,nacos,context,tracing
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: System :: Logging
+Classifier: Topic :: Internet :: WWW/HTTP :: HTTP Servers
+Classifier: Topic :: System :: Distributed Computing
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests>=2.32.4
+Requires-Dist: urllib3<3.0.0,>=1.26.20
+Requires-Dist: contextvars>=2.4
+Requires-Dist: python-dotenv>=0.19.0
+Provides-Extra: tls
+Requires-Dist: volcengine>=1.0.184; extra == "tls"
+Requires-Dist: lz4>=4.0.0; extra == "tls"
+Provides-Extra: web
+Requires-Dist: fastapi>=0.68.0; extra == "web"
+Requires-Dist: uvicorn>=0.15.0; extra == "web"
+Requires-Dist: flask>=2.0.0; extra == "web"
+Requires-Dist: django>=3.2.0; extra == "web"
+Requires-Dist: tornado>=6.0.0; extra == "web"
+Provides-Extra: dev
+Requires-Dist: pytest>=6.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.18.0; extra == "dev"
+Requires-Dist: pytest-cov>=2.12.0; extra == "dev"
+Requires-Dist: black>=21.0.0; extra == "dev"
+Requires-Dist: flake8>=3.9.0; extra == "dev"
+Requires-Dist: mypy>=0.910; extra == "dev"
+Provides-Extra: all
+Requires-Dist: py-sdk[dev,tls,web]; extra == "all"
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
 # Python 微服务通用 SDK (py-sdk)
 
 一个为 Python 微服务开发设计的通用工具包，提供统一的日志管理、HTTP 客户端、上下文管理和服务注册发现等功能。
@@ -46,8 +105,7 @@ pip install py-sdk[all]
 ### 最简使用（3行代码）
 
 ```python
-from context import create_context
-from logger import get_logger
+from py_sdk import create_context, get_logger
 
 # 创建上下文（自动生成 TraceID）
 ctx = create_context()
@@ -62,10 +120,10 @@ logger.info(ctx, "服务启动成功")
 ### 完整功能使用
 
 ```python
-from context import create_context
-from logger import init_logger_manager, get_logger
-from http_client import create_response, ResponseCode
-from nacos import registerNacos
+from py_sdk import (
+    create_context, init_logger_manager, get_logger,
+    create_response, ResponseCode, registerNacos
+)
 
 # 1. 初始化日志（支持火山引擎 TLS）
 init_logger_manager(
