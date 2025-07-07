@@ -155,7 +155,7 @@ class AsyncTLSHandler(logging.Handler):
             }
         
         try:
-            from nacos_sdk.api import get_config
+            from py_sdk.nacos_sdk.api import get_config
             import json
             
             tls_config = get_config("tls.log.config")
@@ -338,8 +338,19 @@ class AsyncTLSHandler(logging.Handler):
             except queue.Full:
                 pass
         
-        # 等待工作线程完成
-        self.executor.shutdown(wait=True, timeout=30)
+        # 等待工作线程完成，使用超时避免无限等待
+        try:
+            import threading
+            import time
+            
+            # 先尝试优雅关闭，不等待
+            self.executor.shutdown(wait=False)
+            
+            # 等待最多2秒让线程自然结束
+            time.sleep(2.0)
+                
+        except Exception as e:
+            logging.getLogger("py_sdk.logger").warning(f"关闭TLS工作线程时出现异常: {e}")
         
         logging.getLogger("py_sdk.logger").info("异步TLS日志处理器已关闭")
         super().close()
@@ -409,7 +420,7 @@ class SyncTLSHandler(logging.Handler):
             }
         
         try:
-            from nacos_sdk.api import get_config
+            from py_sdk.nacos_sdk.api import get_config
             import json
             
             tls_config = get_config("tls.log.config")
@@ -612,7 +623,7 @@ class LoggerManager:
     def _load_volcengine_config(self):
         """加载火山引擎配置"""
         try:
-            from nacos_sdk.api import get_config
+            from py_sdk.nacos_sdk.api import get_config
             import json
             
             # 首先尝试从 tls.log.config 获取配置
@@ -776,14 +787,19 @@ def init_logger_manager(config: Dict[str, Any], topic_id: str = None, service_na
         service_name: 服务名称（可选，用于日志标识）
     
     Note:
-        此函数只能调用一次，重复调用会被忽略
+        强制重新初始化以确保TLS配置正确应用
     """
     global _logger_manager
-    if _logger_manager is None:
-        _logger_manager = LoggerManager(topic_id=topic_id, service_name=service_name)
-        _logger_manager.init_from_config(config)
-    else:
-        logging.getLogger("py_sdk.logger").warning("日志管理器已经初始化，忽略重复初始化")
+    
+    # 强制重新初始化，确保TLS配置正确应用
+    if _logger_manager is not None:
+        logging.getLogger("py_sdk.logger").info("强制重新初始化日志管理器以应用新配置")
+        # 简单地重置为None，让垃圾回收处理旧的管理器
+        _logger_manager = None
+    
+    # 创建新的日志管理器
+    _logger_manager = LoggerManager(topic_id=topic_id, service_name=service_name)
+    _logger_manager.init_from_config(config)
 
 
 def is_logger_initialized() -> bool:
