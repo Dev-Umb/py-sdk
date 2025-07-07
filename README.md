@@ -1,49 +1,33 @@
-# Python 微服务通用 SDK (py-sdk)
+# py_sdk - Python 微服务通用 SDK
 
 一个为 Python 微服务开发设计的通用工具包，提供统一的日志管理、HTTP 客户端、上下文管理和服务注册发现等功能。
 
 ## 🚀 核心特性
 
-- **🔧 零配置启动**: 所有配置通过 Nacos 自动获取，开箱即用
-- **📋 统一日志**: 自动包含 TraceID 的结构化日志，支持火山引擎 TLS
-- **🌐 HTTP 客户端**: 标准化的 HTTP 请求和响应处理
-- **🔗 上下文管理**: 自动 TraceID 传递，支持异步安全
-- **🎯 服务发现**: 基于 Nacos SDK 的服务注册与发现
-- **📊 可观测性**: 完整的链路追踪和日志聚合
+- **🔗 上下文管理**: 自动生成和传递 TraceID，实现完整的链路追踪
+- **📋 统一日志**: 结构化日志记录，自动包含 TraceID，支持火山引擎 TLS
+- **🌐 HTTP 响应**: 标准化的 API 响应格式，统一的业务状态码系统
+- **🎯 服务发现**: 基于 Nacos 的服务注册发现和配置管理
+- **⚡ 开箱即用**: 零配置启动，极简的 API 设计
 
 ## 📦 快速安装
 
-### 方式1: Git Clone + pip install（推荐）
-
 ```bash
-# 1. 克隆项目
+# 克隆项目
 git clone <your-repo-url>
 cd py_sdk
 
-# 2. 安装包（开发模式）
+# 安装依赖
 pip install -e .
 
-# 3. 安装可选功能
-pip install -e .[all]  # 安装所有功能
-pip install -e .[tls]  # 仅安装 TLS 支持
-pip install -e .[web]  # 仅安装 Web 框架支持
+# 安装可选功能
+pip install -e .[all]  # 完整功能
+pip install -e .[tls]  # 仅火山引擎 TLS 支持
 ```
-
-### 方式2: 直接 pip 安装（如果已发布到 PyPI）
-
-```bash
-# 基础安装
-pip install py_sdk
-
-# 完整安装
-pip install py_sdk[all]
-```
-
-> 📋 **详细安装指南**: 查看 [INSTALL.md](./INSTALL.md) 获取完整的安装和配置说明
 
 ## ⚡ 快速开始
 
-### 最简使用（3行代码）
+### 3 行代码开始使用
 
 ```python
 from context import create_context
@@ -52,81 +36,160 @@ from logger import get_logger
 # 创建上下文（自动生成 TraceID）
 ctx = create_context()
 
-# 获取日志记录器并记录日志
+# 记录日志（自动包含 TraceID）
 logger = get_logger("my-service")
 logger.info(ctx, "服务启动成功")
 
-# 输出: 2025-07-03 18:40:00,123 - my-service - INFO - [abc123def456] - 服务启动成功
+# 输出: 2025-01-03 18:40:00,123 - my-service - INFO - [abc123def456] - 服务启动成功
 ```
 
-### 完整功能使用
+### 完整功能演示
 
 ```python
 from context import create_context
 from logger import init_logger_manager, get_logger
-from http_client import create_response, ResponseCode
+from http_client import create_response, OK
 from nacos_sdk import registerNacos
 
-# 1. 初始化日志（支持火山引擎 TLS）
-init_logger_manager(
-    config={"handlers": {"tls": {"enabled": True}}},
-    topic_id="your-tls-topic-id",
-    service_name="my-service"
-)
+# 1. 初始化日志
+init_logger_manager(service_name="my-service")
 
-# 2. 注册服务（使用环境变量配置）
-success = registerNacos(
+# 2. 注册服务
+registerNacos(
     service_name="my-service",
     port=8080,
-    # server_addresses, namespace, username, password 从环境变量读取
     metadata={"version": "1.0.0"}
 )
 
-# 3. 使用上下文和日志
+# 3. 处理业务逻辑
 ctx = create_context()
 logger = get_logger("my-service")
 
-logger.info(ctx, "服务已启动", extra={
-    "port": 8080,
-    "version": "1.0.0",
-    "nacos_registered": success
-})
+logger.info(ctx, "处理用户请求", extra={"user_id": 123})
 
 # 4. 创建标准响应
 response = create_response(
     context=ctx,
-    code=ResponseCode.SUCCESS,
-    data={"message": "Hello World"}
+    code=OK,
+    data={"user_id": 123, "name": "张三"}
 )
 ```
 
-## 🛠 工具库概览
+## 🛠 核心模块
 
 ### 1. 上下文管理 (context)
-- **作用**: 管理请求上下文和 TraceID，实现链路追踪
-- **核心功能**: 自动生成 TraceID，上下文传递，异步安全
 
-### 2. 日志管理 (logger)  
-- **作用**: 统一的日志记录，自动包含 TraceID
-- **核心功能**: 多种输出方式（控制台、文件、火山引擎 TLS），结构化日志
+自动生成和管理 TraceID，实现链路追踪。
+
+```python
+from context import create_context, get_trace_id
+
+# 创建上下文
+ctx = create_context()
+print(f"TraceID: {ctx.trace_id}")
+
+# 获取当前 TraceID
+trace_id = get_trace_id()
+```
+
+**📖 详细文档**: [docs/context.md](docs/context.md)  
+**🔧 示例代码**: [examples/context_example.py](examples/context_example.py)
+
+### 2. 日志管理 (logger)
+
+统一的日志记录，自动包含 TraceID，支持多种输出方式。
+
+```python
+from logger import get_logger, init_logger_manager
+
+# 初始化（可选）
+init_logger_manager()
+
+# 记录日志
+logger = get_logger("my-service")
+logger.info(ctx, "用户登录", extra={"user_id": 123})
+```
+
+**📖 详细文档**: [docs/logger.md](docs/logger.md)  
+**🔧 示例代码**: [examples/logger_example.py](examples/logger_example.py)
 
 ### 3. HTTP 客户端 (http_client)
-- **作用**: 标准化的 HTTP 请求处理和响应格式
-- **核心功能**: 统一响应格式，中间件支持，错误处理
+
+标准化的 HTTP 响应格式，统一的业务状态码系统。
+
+```python
+from http_client import create_response, OK, INVALID_PARAMS
+
+# 成功响应
+response = create_response(
+    context=ctx,
+    data={"id": 123, "name": "张三"}
+)
+
+# 错误响应
+error = create_response(
+    context=ctx,
+    code=INVALID_PARAMS
+)
+```
+
+**📖 详细文档**: [docs/http_client.md](docs/http_client.md)  
+**🔧 示例代码**: [examples/http_client_example.py](examples/http_client_example.py)
 
 ### 4. 服务发现 (nacos_sdk)
-- **作用**: 基于 Nacos 的配置管理和服务注册发现
-- **核心功能**: 配置热更新，服务注册，健康检查
+
+基于 Nacos 的服务注册发现和配置管理。
+
+```python
+from nacos_sdk import registerNacos, get_config
+
+# 注册服务
+registerNacos(
+    service_name="my-service",
+    port=8080,
+    metadata={"version": "1.0.0"}
+)
+
+# 获取配置
+config = get_config("database.yml")
+```
+
+**📖 详细文档**: [docs/nacos_sdk.md](docs/nacos_sdk.md)  
+**🔧 示例代码**: [examples/nacos_sdk_example.py](examples/nacos_sdk_example.py)
+
+## 🎯 完整示例
+
+查看完整的集成使用示例：
+
+```bash
+# 运行完整示例
+python examples/complete_example.py
+```
+
+**🔧 完整示例**: [examples/complete_example.py](examples/complete_example.py)
 
 ## 🔧 环境配置
 
-### 快速配置
-
-**方式1：使用自动化脚本（推荐）**
+### 环境变量
 
 ```bash
-# Windows (PowerShell) - 首次运行需要设置执行策略
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+# Nacos 配置
+export NACOS_SERVER_ADDRESSES=127.0.0.1:8848
+export NACOS_NAMESPACE=dev
+export NACOS_USERNAME=nacos
+export NACOS_PASSWORD=nacos
+
+# 火山引擎 TLS 配置（可选）
+export VOLCENGINE_ENDPOINT=https://tls-cn-beijing.volces.com
+export VOLCENGINE_ACCESS_KEY_ID=your-ak
+export VOLCENGINE_ACCESS_KEY_SECRET=your-sk
+export VOLCENGINE_REGION=cn-beijing
+```
+
+### 快速配置脚本
+
+```bash
+# Windows
 .\setup-env.ps1
 
 # Linux/Mac
@@ -134,107 +197,191 @@ chmod +x setup-env.sh
 ./setup-env.sh
 ```
 
-**方式2：手动配置**
+## 🌐 Web 框架集成
+
+### FastAPI
+
+```python
+from fastapi import FastAPI, Request
+from context import create_context_from_request
+from http_client import create_response, OK
+
+app = FastAPI()
+
+@app.get("/api/users/{user_id}")
+async def get_user(user_id: int, request: Request):
+    ctx = create_context_from_request(request)
+    
+    # 业务逻辑
+    user_data = {"id": user_id, "name": "张三"}
+    
+    return create_response(
+        context=ctx,
+        code=OK,
+        data=user_data
+    ).to_dict()
+```
+
+### Flask
+
+```python
+from flask import Flask, request
+from context import create_context_from_request
+from http_client import create_response, OK
+
+app = Flask(__name__)
+
+@app.route('/api/users/<int:user_id>')
+def get_user(user_id):
+    ctx = create_context_from_request(request)
+    
+    # 业务逻辑
+    user_data = {"id": user_id, "name": "张三"}
+    
+    response = create_response(
+        context=ctx,
+        code=OK,
+        data=user_data
+    )
+    return response.to_dict()
+```
+
+## 📋 依赖要求
+
+### 基础依赖（自动安装）
+
+- `requests>=2.32.4` - HTTP 请求库
+- `urllib3>=1.26.20,<3.0.0` - HTTP 客户端
+- `contextvars>=2.4` - 上下文变量支持
+- `python-dotenv>=0.19.0` - 环境变量管理
+
+### 可选依赖
 
 ```bash
-# 1. 复制环境变量示例文件
-cp env.example .env
+# 火山引擎 TLS 支持
+pip install py_sdk[tls]
 
-# 2. 编辑配置文件
-vim .env  # 或使用其他编辑器
+# Web 框架支持
+pip install py_sdk[web]
 
-# 3. 设置必要的环境变量
-source .env  # Linux/Mac
-# 或直接在系统中设置环境变量
+# 开发工具
+pip install py_sdk[dev]
+
+# 完整功能
+pip install py_sdk[all]
 ```
 
-### Nacos 配置
+## 🌟 最佳实践
 
-```bash
-# 环境变量方式（推荐）
-export NACOS_SERVER_ADDRESSES=127.0.0.1:8848  # 支持多地址: "ip1:port1,ip2:port2"
-export NACOS_NAMESPACE=dev
-export NACOS_USERNAME=nacos  # 可选
-export NACOS_PASSWORD=nacos  # 可选
+### 1. 项目结构
+
+```
+your-project/
+├── main.py                 # 应用入口
+├── config/
+│   ├── __init__.py
+│   └── settings.py         # 配置管理
+├── services/
+│   ├── __init__.py
+│   ├── user_service.py     # 业务服务
+│   └── order_service.py
+├── api/
+│   ├── __init__.py
+│   └── routes.py          # API 路由
+└── requirements.txt
 ```
 
-**环境变量说明**：
-- `NACOS_SERVER_ADDRESSES`: Nacos服务器地址，支持集群配置
-- `NACOS_NAMESPACE`: 命名空间，用于环境隔离
-- `NACOS_USERNAME`: 认证用户名（启用认证时必需）
-- `NACOS_PASSWORD`: 认证密码（启用认证时必需）
+### 2. 应用初始化
 
-**配置优先级**：参数 > 环境变量 > 默认值（127.0.0.1:8848）
+```python
+# main.py
+from context import create_context
+from logger import init_logger_manager, get_logger
+from nacos_sdk import registerNacos
+from http_client import create_response, OK
 
-> 📋 **完整配置列表**：查看 [`env.example`](./env.example) 文件获取所有支持的环境变量配置项
+# 初始化日志
+init_logger_manager(service_name="my-app")
 
-### 火山引擎 TLS 配置
+# 注册服务
+registerNacos(
+    service_name="my-app",
+    port=8080,
+    metadata={"version": "1.0.0"}
+)
 
-在 Nacos 中创建配置：
-
-**DataID**: `tls.log.config`  
-**Group**: `DEFAULT_GROUP`
-
-```json
-{
-    "VOLCENGINE_ENDPOINT": "https://tls-cn-beijing.volces.com",
-    "VOLCENGINE_ACCESS_KEY_ID": "your-ak",
-    "VOLCENGINE_ACCESS_KEY_SECRET": "your-sk",
-    "VOLCENGINE_REGION": "cn-beijing"
-}
+logger = get_logger(__name__)
+ctx = create_context()
+logger.info(ctx, "应用启动成功")
 ```
 
-## 🎯 示例代码
+### 3. 业务服务
 
-查看 `examples/` 目录下的完整示例：
+```python
+# services/user_service.py
+from context import get_current_context
+from logger import get_logger
+from http_client import create_response, OK, INVALID_PARAMS
 
-```bash
-# 基础功能演示
-python examples/basic_usage.py
+logger = get_logger(__name__)
 
-# FastAPI 集成示例
-python examples/fastapi_example.py
-
-# 火山引擎 TLS 日志测试
-python examples/test_tls_logging.py
-
-# Nacos 环境变量配置示例
-python examples/nacos_env_example.py
-
-# 环境变量配置使用示例
-python examples/env_config_example.py
-
-# Nacos 连接测试
-python examples/nacos_connection_example.py
+def get_user_by_id(user_id):
+    ctx = get_current_context()
+    
+    logger.info(ctx, "查询用户", extra={"user_id": user_id})
+    
+    if user_id <= 0:
+        return create_response(
+            context=ctx,
+            code=INVALID_PARAMS
+        )
+    
+    # 业务逻辑
+    user_data = {"id": user_id, "name": "张三"}
+    
+    return create_response(
+        context=ctx,
+        code=OK,
+        data=user_data
+    )
 ```
 
-## 📚 详细文档
+### 4. 错误处理
 
-完整的使用文档位于 `docs/` 目录：
+```python
+from http_client import create_response, INTERNAL_SERVER_ERROR
 
-- **[快速开始指南](./docs/README.md)** - 完整的 SDK 使用指南
-- **[上下文管理](./docs/context.md)** - TraceID 和上下文管理
-- **[日志管理](./docs/logger.md)** - 日志记录和火山引擎 TLS 集成
-- **[HTTP 客户端](./docs/http_client.md)** - HTTP 请求和响应处理
-- **[Nacos SDK 服务发现](./docs/nacos.md)** - 配置管理和服务注册发现
-- **[配置管理指南](./docs/config.md)** - 配置文件和环境变量
-- **[常见问题解答](./docs/faq.md)** - 问题排查和解决方案
+try:
+    # 业务逻辑
+    result = process_business_logic()
+    return create_response(context=ctx, data=result)
+    
+except Exception as e:
+    logger.exception(ctx, "业务处理异常", extra={"error": str(e)})
+    return create_response(
+        context=ctx,
+        code=INTERNAL_SERVER_ERROR
+    )
+```
 
-## 🚨 注意事项
+## 📚 更多文档
 
-1. **TopicID 必需**: 使用火山引擎 TLS 时，每个服务必须配置不同的 TopicID
-2. **依赖安装**: 火山引擎 TLS 需要安装 `lz4>=4.0.0` 依赖
-3. **异步安全**: 所有上下文操作都是异步安全的
-4. **配置热更新**: Nacos 配置支持热更新，无需重启服务
+- **[安装指南](INSTALL.md)** - 详细的安装和配置说明
+- **[更新日志](CHANGELOG.md)** - 版本更新记录
+- **[贡献指南](CONTRIBUTING.md)** - 如何参与项目开发
 
-## 📞 技术支持
+## 📄 许可证
 
-如有问题，请查看：
-1. [常见问题解答](./docs/faq.md)
-2. [配置指南](./docs/config.md)
-3. 示例代码 `examples/`
-4. 提交 Issue 或联系开发团队
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+
+## 🤝 支持
+
+如有问题或建议，请：
+
+1. 查看 [FAQ 文档](docs/faq.md)
+2. 提交 [Issue](https://github.com/your-org/py-sdk/issues)
+3. 发起 [Pull Request](https://github.com/your-org/py-sdk/pulls)
 
 ---
 
-**开始使用**: 查看 [完整文档](./docs/README.md) 了解详细的使用方法和最佳实践。 
+**⭐ 如果这个项目对你有帮助，请给我们一个 Star！** 
