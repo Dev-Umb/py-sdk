@@ -1,7 +1,7 @@
 """
 快速启动示例
 
-最简单的 py-sdk 使用方式，连接内网 Nacos。
+最简单的 py_sdk 使用方式，连接内网 Nacos。
 """
 
 import os
@@ -14,7 +14,7 @@ sys.path.insert(0, '.')
 os.environ['NACOS_ADDRESS'] = '10.15.101.239:8848'
 os.environ['NACOS_NAMESPACE'] = ''
 
-# 导入 py-sdk
+# 导入 py_sdk
 from context.manager import create_context
 from logger import init_logger_manager, get_logger
 from http_client.response import create_response
@@ -23,7 +23,7 @@ from http_client.code import OK, ROOM_NOT_FOUND
 
 def main():
     """快速启动示例"""
-    print("🚀 py-sdk 快速启动")
+    print("🚀 py_sdk 快速启动")
     print(f"📡 Nacos: {os.environ['NACOS_ADDRESS']}")
     print()
     

@@ -11,7 +11,7 @@ import contextvars
 import logging
 from typing import Optional, Dict, Any, Union
 
-logger = logging.getLogger("py-sdk.context")
+logger = logging.getLogger("py_sdk.context")
 
 # 全局上下文变量
 _context_var: contextvars.ContextVar = contextvars.ContextVar('request_context')

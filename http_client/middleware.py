@@ -7,10 +7,10 @@ HTTP 中间件
 
 import logging
 from typing import Callable, Any
-from context.manager import create_context_from_request, set_context, get_current_context
-from logger.manager import get_logger
+from ..context.manager import create_context_from_request, set_context, get_current_context
+from ..logger.manager import get_logger
 
-logger = get_logger("py-sdk.http.middleware")
+logger = get_logger("py_sdk.http.middleware")
 
 
 def create_fastapi_middleware():

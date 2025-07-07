@@ -1,5 +1,5 @@
 """
-Python 微服务通用 SDK (py-sdk)
+Python 微服务通用 SDK (py_sdk)
 
 一个为 Python 微服务开发设计的通用工具包，提供统一的日志管理、HTTP 客户端、
 上下文管理和服务注册发现等功能。
@@ -13,8 +13,8 @@ Python 微服务通用 SDK (py-sdk)
 - 📊 可观测性: 完整的链路追踪和日志聚合
 
 快速开始：
-    >>> from context import create_context
-    >>> from logger import get_logger
+    >>> from py_sdk.context import create_context
+    >>> from py_sdk.logger import get_logger
     >>> 
     >>> # 创建上下文（自动生成 TraceID）
     >>> ctx = create_context()
@@ -29,7 +29,7 @@ __author__ = "Your Team"
 __email__ = "your-email@example.com"
 
 # 导入核心功能
-from context import (
+from .context import (
     Context,
     create_context,
     get_current_context,
@@ -39,13 +39,13 @@ from context import (
     create_context_from_grpc
 )
 
-from logger import (
+from .logger import (
     get_logger,
     SDKLogger,
     init_logger_manager
 )
 
-from http_client import (
+from .http_client import (
     APIResponse,
     ResponseBuilder,
     create_response,
@@ -61,7 +61,7 @@ from http_client import (
     create_django_middleware
 )
 
-from nacos_sdk import (
+from .nacos_sdk import (
     registerNacos,
     unregisterNacos,
     init_nacos_client,

@@ -18,7 +18,7 @@
 ```bash
 # 1. 克隆项目
 git clone <your-repo-url>
-cd py-sdk
+cd py_sdk
 
 # 2. 安装包（开发模式）
 pip install -e .
@@ -33,10 +33,10 @@ pip install -e .[web]  # 仅安装 Web 框架支持
 
 ```bash
 # 基础安装
-pip install py-sdk
+pip install py_sdk
 
 # 完整安装
-pip install py-sdk[all]
+pip install py_sdk[all]
 ```
 
 > 📋 **详细安装指南**: 查看 [INSTALL.md](./INSTALL.md) 获取完整的安装和配置说明

@@ -1,7 +1,7 @@
 """
 基础使用示例
 
-演示 py-sdk 的基本功能使用方法，包括内网 Nacos 集成。
+演示 py_sdk 的基本功能使用方法，包括内网 Nacos 集成。
 """
 
 import os
@@ -437,7 +437,7 @@ def simulate_request_processing():
 
 def main():
     """主函数"""
-    print("py-sdk 基础使用示例")
+    print("py_sdk 基础使用示例")
     print("=" * 50)
     print("功能包括：")
     print("- 内网 Nacos 集成 (10.15.101.239:8848)")

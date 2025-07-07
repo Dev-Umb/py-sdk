@@ -16,7 +16,7 @@
 ```bash
 # 克隆项目
 git clone <your-repo-url>
-cd py-sdk
+cd py_sdk
 
 # 安装依赖
 pip install -r requirements.txt

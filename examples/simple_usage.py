@@ -1,7 +1,7 @@
 """
 简化使用示例
 
-展示 py-sdk 最简单的使用方法 - 只需要 TraceID。
+展示 py_sdk 最简单的使用方法 - 只需要 TraceID。
 """
 
 import sys
@@ -13,7 +13,7 @@ from logger import get_logger
 
 def simple_example():
     """最简单的使用示例"""
-    print("=== py-sdk 简化使用示例 ===")
+    print("=== py_sdk 简化使用示例 ===")
     
     # 1. 创建上下文（自动生成 TraceID）
     ctx = create_context()
@@ -61,7 +61,7 @@ def multiple_contexts_example():
 
 def main():
     """主函数"""
-    print("py-sdk 简化版本使用演示")
+    print("py_sdk 简化版本使用演示")
     print("特点：只需要 TraceID，API 极其简单")
     print("=" * 50)
     

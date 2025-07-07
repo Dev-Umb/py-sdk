@@ -12,10 +12,10 @@ from typing import Dict, Any, Optional, Union
 import requests
 from requests.adapters import HTTPAdapter
 
-from context.manager import get_current_context
+from ..context.manager import get_current_context
 from .response import APIResponse
 from .code import INTERNAL_SERVER_ERROR
-from nacos_sdk.api import get_config
+from ..nacos_sdk.api import get_config
 
 # 安全导入 urllib3
 try:
@@ -24,7 +24,7 @@ except ImportError:
     # 如果 urllib3 导入失败，使用 requests 的重试机制
     from requests.packages.urllib3.util.retry import Retry
 
-logger = logging.getLogger("py-sdk.http")
+logger = logging.getLogger("py_sdk.http")
 
 # 默认配置
 DEFAULT_CONFIG = {
@@ -35,7 +35,7 @@ DEFAULT_CONFIG = {
     "pool_connections": 10,
     "pool_maxsize": 10,
     "default_headers": {
-        "User-Agent": "py-sdk/1.0.0",
+        "User-Agent": "py_sdk/1.0.0",
         "Content-Type": "application/json"
     }
 }

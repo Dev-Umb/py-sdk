@@ -1,7 +1,7 @@
 """
 内网 Nacos 连接示例
 
-展示如何连接到内网 Nacos 服务器并使用完整的 py-sdk 功能。
+展示如何连接到内网 Nacos 服务器并使用完整的 py_sdk 功能。
 """
 
 import os

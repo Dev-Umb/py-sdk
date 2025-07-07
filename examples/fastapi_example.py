@@ -1,7 +1,7 @@
 """
 FastAPI 集成示例
 
-展示如何在 FastAPI 应用中集成 py-sdk 的各种功能，
+展示如何在 FastAPI 应用中集成 py_sdk 的各种功能，
 包括连接内网 Nacos 和使用完整的日志功能。
 """
 
@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 
-# 导入 py-sdk 模块
+# 导入 py_sdk 模块
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -102,7 +102,7 @@ def register_service_to_nacos():
             "metadata": {
                 "framework": "fastapi",
                 "version": "1.0.0",
-                "description": "py-sdk FastAPI 演示服务"
+                "description": "py_sdk FastAPI 演示服务"
             }
         }
         
@@ -132,8 +132,8 @@ init_logger_from_nacos()
 
 # 创建 FastAPI 应用
 app = FastAPI(
-    title="py-sdk FastAPI 演示",
-    description="展示 py-sdk 在 FastAPI 中的完整使用，包括内网 Nacos 集成",
+    title="py_sdk FastAPI 演示",
+    description="展示 py_sdk 在 FastAPI 中的完整使用，包括内网 Nacos 集成",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -148,7 +148,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 添加 py-sdk 中间件
+# 添加 py_sdk 中间件
 app.middleware("http")(create_fastapi_middleware())
 
 # 获取日志记录器
@@ -202,7 +202,7 @@ async def root():
     return create_response(
         ctx,
         data={
-            "message": "欢迎使用 py-sdk FastAPI 演示",
+            "message": "欢迎使用 py_sdk FastAPI 演示",
             "version": "1.0.0",
             "nacos_server": "10.15.101.239:8848",
             "features": [

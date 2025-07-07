@@ -40,14 +40,14 @@
 ### 安装方式
 ```bash
 # 基础安装
-pip install py-sdk
+pip install py_sdk
 
 # 完整安装
-pip install py-sdk[all]
+pip install py_sdk[all]
 
 # 或者 git clone 方式
 git clone <repo-url>
-cd py-sdk
+cd py_sdk
 pip install -e .
 ```
 

@@ -52,7 +52,7 @@ extras_require = {
 extras_require["all"] = sum(extras_require.values(), [])
 
 setup(
-    name="py-sdk",
+    name="py_sdk",
     version="1.0.0",
     author="Your Team",
     author_email="your-email@example.com",
@@ -86,7 +86,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "py-sdk-setup=py_sdk.scripts.setup:main",
+            "py_sdk-setup=py_sdk.scripts.setup:main",
         ],
     },
     keywords="microservice sdk logging http nacos context tracing",

@@ -7,7 +7,7 @@
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/your-org/py-sdk.git
-cd py-sdk
+cd py_sdk
 
 # 2. 安装包（开发模式）
 pip install -e .
@@ -22,10 +22,10 @@ pip install -e .[web]  # 仅安装 Web 框架支持
 
 ```bash
 # 基础安装
-pip install py-sdk
+pip install py_sdk
 
 # 完整安装
-pip install py-sdk[all]
+pip install py_sdk[all]
 ```
 
 ## 📦 依赖说明
@@ -40,7 +40,7 @@ pip install py-sdk[all]
 
 #### `[tls]` - 火山引擎 TLS 支持
 ```bash
-pip install py-sdk[tls]
+pip install py_sdk[tls]
 ```
 包含：
 - `volcengine>=1.0.184` - 火山引擎 SDK
@@ -48,7 +48,7 @@ pip install py-sdk[tls]
 
 #### `[web]` - Web 框架支持
 ```bash
-pip install py-sdk[web]
+pip install py_sdk[web]
 ```
 包含：
 - `fastapi>=0.68.0` - FastAPI 框架
@@ -59,7 +59,7 @@ pip install py-sdk[web]
 
 #### `[dev]` - 开发工具
 ```bash
-pip install py-sdk[dev]
+pip install py_sdk[dev]
 ```
 包含：
 - `pytest>=6.0.0` - 测试框架
@@ -71,7 +71,7 @@ pip install py-sdk[dev]
 
 #### `[all]` - 所有功能
 ```bash
-pip install py-sdk[all]
+pip install py_sdk[all]
 ```
 包含所有上述依赖。
 
@@ -137,7 +137,7 @@ print(f"TraceID: {ctx.trace_id}")
 
 # 获取日志记录器
 logger = get_logger("test")
-logger.info(ctx, "py-sdk 安装成功！")
+logger.info(ctx, "py_sdk 安装成功！")
 ```
 
 ### 运行示例代码
@@ -188,7 +188,7 @@ your-project/
 ```bash
 cd your-project
 git clone https://github.com/your-org/py-sdk.git
-cd py-sdk
+cd py_sdk
 pip install -e .
 ```
 
@@ -209,19 +209,19 @@ def main():
 ### Q1: 导入失败怎么办？
 ```bash
 # 检查是否正确安装
-pip list | grep py-sdk
+pip list | grep py_sdk
 
 # 重新安装
-pip uninstall py-sdk
+pip uninstall py_sdk
 pip install -e .
 ```
 
 ### Q2: 缺少可选依赖？
 ```bash
 # 安装特定功能
-pip install py-sdk[tls]  # TLS 支持
-pip install py-sdk[web]  # Web 框架支持
-pip install py-sdk[all]  # 所有功能
+pip install py_sdk[tls]  # TLS 支持
+pip install py_sdk[web]  # Web 框架支持
+pip install py_sdk[all]  # 所有功能
 ```
 
 ### Q3: 环境变量配置问题？

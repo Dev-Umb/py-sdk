@@ -37,7 +37,7 @@ def test_tls_logging():
     
     # 使用你的实际 TopicID
     topic_id = "2a6a07f0-8490-4a72-9a41-e5f25c578751"
-    service_name = "py-sdk-test"
+    service_name = "py_sdk-test"
     
     # 初始化日志管理器
     init_logger_manager(config, topic_id=topic_id, service_name=service_name)

@@ -144,7 +144,7 @@ export NACOS_PASSWORD=secure_password
     "retry_delay": 1,
     "max_retry_delay": 60,
     "default_headers": {
-        "User-Agent": "py-sdk/1.0.0",
+        "User-Agent": "py_sdk/1.0.0",
         "Accept": "application/json",
         "Content-Type": "application/json"
     },

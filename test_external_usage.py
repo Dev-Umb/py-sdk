@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-外部项目使用 py-sdk 的完整示例
-在 coc_rules/server 目录中演示如何使用 py-sdk
+外部项目使用 py_sdk 的完整示例
+在 coc_rules/server 目录中演示如何使用 py_sdk
 """
 
 def test_py_sdk_usage():
-    """测试在外部项目中使用 py-sdk 的各种功能"""
-    print("🚀 外部项目使用 py-sdk 测试")
+    """测试在外部项目中使用 py_sdk 的各种功能"""
+    print("🚀 外部项目使用 py_sdk 测试")
     print("=" * 50)
     
     # 1. 测试上下文管理
@@ -137,7 +137,7 @@ def test_py_sdk_usage():
     
     print("\n" + "=" * 50)
     print("🎉 所有测试通过！")
-    print("✅ py-sdk 在外部项目中工作正常！")
+    print("✅ py_sdk 在外部项目中工作正常！")
     print("✅ 可以在 coc_rules/server 中正常使用所有功能！")
     
     return True
@@ -148,13 +148,13 @@ def show_usage_examples():
     print("=" * 50)
     
     print("""
-# 在您的外部项目中，现在可以这样使用 py-sdk：
+# 在您的外部项目中，现在可以这样使用 py_sdk：
 
 # 1. 导入所需模块
-from context import create_context
-from logger import get_logger  
-from http_client import create_response, OK
-from nacos_sdk import get_config
+from .context import create_context
+from .logger import get_logger
+from .http_client import create_response, OK
+from .nacos_sdk import get_config
 
 # 2. 创建上下文和日志记录器
 ctx = create_context()
