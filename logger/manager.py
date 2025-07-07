@@ -477,18 +477,37 @@ def init_logger_manager(config: Dict[str, Any], topic_id: str = None, service_na
         config: 日志配置字典
         topic_id: 火山引擎 TLS TopicID（必需，每个服务不同）
         service_name: 服务名称（可选，用于日志标识）
+    
+    Note:
+        此函数只能调用一次，重复调用会被忽略
     """
     global _logger_manager
     if _logger_manager is None:
         _logger_manager = LoggerManager(topic_id=topic_id, service_name=service_name)
+        _logger_manager.init_from_config(config)
+    else:
+        logging.getLogger("py-sdk.logger").warning("日志管理器已经初始化，忽略重复初始化")
+
+
+def is_logger_initialized() -> bool:
+    """
+    检查日志管理器是否已经初始化
     
-    _logger_manager.init_from_config(config)
+    Returns:
+        bool: 如果已初始化返回True，否则返回False
+    """
+    global _logger_manager
+    return _logger_manager is not None and _logger_manager.initialized
 
 
 def get_logger_manager() -> LoggerManager:
     """获取全局日志管理器"""
+    global _logger_manager
     if _logger_manager is None:
-        init_logger_manager({})
+        # 如果没有初始化，使用默认配置初始化
+        _logger_manager = LoggerManager()
+        _logger_manager.init_from_config({})
+        logging.getLogger("py-sdk.logger").info("使用默认配置初始化日志管理器")
     return _logger_manager
 
 
