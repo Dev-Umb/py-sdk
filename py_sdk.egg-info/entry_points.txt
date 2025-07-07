@@ -1,2 +1,0 @@
-[console_scripts]
-py-sdk-setup = py_sdk.scripts.setup:main

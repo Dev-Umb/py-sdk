@@ -19,7 +19,7 @@ from .manager import (
 )
 
 # 便捷的初始化函数
-def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, service_name=None):
+def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, service_name=None, high_performance=True):
     """
     便捷的日志初始化函数
     
@@ -30,6 +30,7 @@ def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, 
         tls: TLS输出配置 (None 或 True 或 配置字典)
         topic_id: 火山引擎 TLS TopicID
         service_name: 服务名称
+        high_performance: 是否启用高性能模式 (默认True，使用异步处理)
     
     Examples:
         # 最简单的初始化（只输出到控制台）
@@ -41,15 +42,23 @@ def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, 
         # 启用文件输出
         init_logger(file="app.log")
         
-        # 启用TLS输出
+        # 启用TLS输出（高性能模式）
         init_logger(tls=True, topic_id="your-topic-id")
         
-        # 完整配置
+        # 启用TLS输出（同步模式，兼容旧版本）
+        init_logger(tls=True, topic_id="your-topic-id", high_performance=False)
+        
+        # 高性能TLS配置
         init_logger(
             level="INFO",
             console=True,
-            file={"filename": "app.log", "max_bytes": 10485760},
-            tls=True,
+            tls={
+                "batch_size": 200,      # 批量大小
+                "batch_timeout": 3.0,   # 批量超时
+                "queue_size": 20000,    # 队列大小
+                "worker_threads": 4,    # 工作线程数
+                "retry_times": 5        # 重试次数
+            },
             topic_id="your-topic-id",
             service_name="your-service"
         )
@@ -84,6 +93,10 @@ def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, 
     if tls:
         config["handlers"]["tls"]["enabled"] = True
         config["handlers"]["tls"]["level"] = level
+        
+        # 设置性能模式
+        if not high_performance:
+            config["handlers"]["tls"]["sync_mode"] = True
         
         if isinstance(tls, dict):
             config["handlers"]["tls"].update(tls)

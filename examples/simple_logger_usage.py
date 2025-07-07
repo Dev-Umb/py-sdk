@@ -4,6 +4,11 @@
 展示如何使用新的简化API来初始化和使用日志系统
 """
 
+# 添加当前目录到Python路径
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from context.manager import create_context
 from logger import init_logger, get_logger, is_logger_initialized
 

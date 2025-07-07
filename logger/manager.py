@@ -3,12 +3,23 @@
 
 支持多种输出方式，自动集成 TraceID，
 基于上下文的结构化日志记录。
+
+性能优化特性：
+- 异步日志处理，避免阻塞主线程
+- 批量发送，减少网络请求次数
+- 队列缓冲，处理高并发场景
+- 失败重试机制
 """
 
 import logging
 import logging.handlers
 import sys
-from typing import Optional, Dict, Any
+import threading
+import queue
+import time
+import json
+from typing import Optional, Dict, Any, List
+from concurrent.futures import ThreadPoolExecutor
 from context.manager import get_current_context, Context
 
 # 默认配置
@@ -55,8 +66,16 @@ class TraceIDFormatter(logging.Formatter):
         return super().format(record)
 
 
-class TLSHandler(logging.Handler):
-    """火山引擎 TLS 日志处理器"""
+class AsyncTLSHandler(logging.Handler):
+    """高性能异步火山引擎 TLS 日志处理器
+    
+    特性：
+    - 异步处理，不阻塞主线程
+    - 批量发送，减少网络请求
+    - 队列缓冲，处理高并发
+    - 自动重试机制
+    - 优雅关闭
+    """
     
     def __init__(self, config: Dict[str, Any], topic_id: str = None, service_name: str = None):
         super().__init__()
@@ -64,21 +83,36 @@ class TLSHandler(logging.Handler):
         self.topic_id = topic_id or config.get("topic_id", "")
         self.service_name = service_name or config.get("service_name", "")
         self.client = None
+        
+        # 性能配置
+        self.batch_size = config.get("batch_size", 100)  # 批量发送大小
+        self.batch_timeout = config.get("batch_timeout", 5.0)  # 批量超时时间(秒)
+        self.queue_size = config.get("queue_size", 10000)  # 队列大小
+        self.worker_threads = config.get("worker_threads", 2)  # 工作线程数
+        self.retry_times = config.get("retry_times", 3)  # 重试次数
+        self.retry_delay = config.get("retry_delay", 1.0)  # 重试延迟(秒)
+        
+        # 内部状态
+        self.log_queue = queue.Queue(maxsize=self.queue_size)
+        self.executor = ThreadPoolExecutor(max_workers=self.worker_threads, thread_name_prefix="tls-logger")
+        self.shutdown_event = threading.Event()
+        self.batch_buffer = []
+        self.last_batch_time = time.time()
+        
+        # 初始化客户端和启动工作线程
         self._init_client()
+        self._start_workers()
     
     def _init_client(self):
         """初始化 TLS 客户端"""
         try:
-            # 首先检查是否有必要的配置
             tls_config = self._parse_tls_config()
             
             if not tls_config or not tls_config.get("endpoint"):
                 logging.getLogger("py-sdk.logger").info("TLS 配置为空或无效，跳过初始化")
                 return
             
-            # 尝试导入火山引擎 TLS SDK
             try:
-                # 正确的导入方式
                 from volcengine.tls.TLSService import TLSService
             except ImportError as e:
                 logging.getLogger("py-sdk.logger").warning(
@@ -87,7 +121,6 @@ class TLSHandler(logging.Handler):
                 )
                 return
             
-            # 初始化 TLS 服务
             region = tls_config.get("region", "cn-beijing")
             endpoint = tls_config.get("endpoint", "")
             if not endpoint:
@@ -100,23 +133,18 @@ class TLSHandler(logging.Handler):
                 region=region
             )
             
-            # 如果有 token，设置 token
             token = tls_config.get("token", "")
             if token:
                 self.client.set_session_token(token)
             
-            logging.getLogger("py-sdk.logger").info("TLS 客户端初始化成功")
+            logging.getLogger("py-sdk.logger").info("异步TLS客户端初始化成功")
             
         except Exception as e:
-            logging.getLogger("py-sdk.logger").error(
-                f"TLS 客户端初始化失败: {str(e)}"
-            )
-            # 确保客户端为 None，避免后续使用
+            logging.getLogger("py-sdk.logger").error(f"异步TLS客户端初始化失败: {str(e)}")
             self.client = None
     
     def _parse_tls_config(self) -> Dict[str, str]:
-        """解析 TLS 配置，支持多种格式"""
-        # 如果配置中直接包含 TLS 配置
+        """解析 TLS 配置"""
         if "endpoint" in self.config:
             return {
                 "endpoint": self.config.get("endpoint", ""),
@@ -126,17 +154,14 @@ class TLSHandler(logging.Handler):
                 "token": self.config.get("token", "")
             }
         
-        # 尝试从 Nacos 获取火山引擎配置（使用新的 dataID）
         try:
             from nacos_sdk.api import get_config
             import json
             
-            # 首先尝试从 tls.log.config 获取配置
             tls_config = get_config("tls.log.config")
             if tls_config:
                 config_data = json.loads(tls_config)
                 
-                # 支持 VOLCENGINE_ 前缀格式
                 if "VOLCENGINE_ENDPOINT" in config_data:
                     return {
                         "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
@@ -146,14 +171,11 @@ class TLSHandler(logging.Handler):
                         "token": config_data.get("VOLCENGINE_TOKEN", "")
                     }
             
-            # 备用：尝试从 volcengine.json 获取配置（保持向后兼容）
             volcengine_config = get_config("volcengine.json")
             if volcengine_config:
                 config_data = json.loads(volcengine_config)
                 
-                # 支持两种配置格式
                 if "VOLCENGINE_ENDPOINT" in config_data:
-                    # 新格式：VOLCENGINE_ 前缀
                     return {
                         "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
                         "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
@@ -162,7 +184,6 @@ class TLSHandler(logging.Handler):
                         "token": config_data.get("VOLCENGINE_TOKEN", "")
                     }
                 else:
-                    # 旧格式：直接字段名
                     return {
                         "endpoint": config_data.get("endpoint", ""),
                         "access_key_id": config_data.get("access_key_id", ""),
@@ -172,23 +193,272 @@ class TLSHandler(logging.Handler):
                     }
             
         except Exception as e:
-            logging.getLogger("py-sdk.logger").info(
-                f"从 Nacos 获取火山引擎配置失败: {str(e)}"
-            )
+            logging.getLogger("py-sdk.logger").debug(f"从 Nacos 获取火山引擎配置失败: {str(e)}")
         
-        # 返回空配置
         return {}
     
+    def _start_workers(self):
+        """启动工作线程"""
+        for i in range(self.worker_threads):
+            self.executor.submit(self._worker_loop, f"worker-{i}")
+    
+    def _worker_loop(self, worker_name: str):
+        """工作线程循环"""
+        logging.getLogger("py-sdk.logger").debug(f"TLS日志工作线程 {worker_name} 启动")
+        
+        while not self.shutdown_event.is_set():
+            try:
+                # 尝试获取日志记录
+                try:
+                    record = self.log_queue.get(timeout=1.0)
+                    if record is None:  # 关闭信号
+                        break
+                    
+                    self.batch_buffer.append(record)
+                    
+                    # 检查是否需要发送批量
+                    current_time = time.time()
+                    should_send = (
+                        len(self.batch_buffer) >= self.batch_size or
+                        (self.batch_buffer and current_time - self.last_batch_time >= self.batch_timeout)
+                    )
+                    
+                    if should_send:
+                        self._send_batch()
+                        self.last_batch_time = current_time
+                    
+                except queue.Empty:
+                    # 超时检查是否需要发送剩余日志
+                    current_time = time.time()
+                    if self.batch_buffer and current_time - self.last_batch_time >= self.batch_timeout:
+                        self._send_batch()
+                        self.last_batch_time = current_time
+                    continue
+                
+            except Exception as e:
+                logging.getLogger("py-sdk.logger").error(f"TLS工作线程 {worker_name} 异常: {str(e)}")
+                time.sleep(1.0)
+        
+        # 发送剩余的日志
+        if self.batch_buffer:
+            self._send_batch()
+        
+        logging.getLogger("py-sdk.logger").debug(f"TLS日志工作线程 {worker_name} 停止")
+    
+    def _send_batch(self):
+        """批量发送日志"""
+        if not self.client or not self.topic_id or not self.batch_buffer:
+            self.batch_buffer.clear()
+            return
+        
+        batch_to_send = self.batch_buffer.copy()
+        self.batch_buffer.clear()
+        
+        for attempt in range(self.retry_times):
+            try:
+                # 构建批量日志
+                log_contents = []
+                for record in batch_to_send:
+                    log_content = {
+                        "level": record.levelname,
+                        "logger": record.name,
+                        "message": record.getMessage(),
+                        "trace_id": getattr(record, 'trace_id', 'unknown'),
+                        "service_name": self.service_name or "unknown",
+                        "module": record.module,
+                        "function": record.funcName,
+                        "line": str(record.lineno),
+                        "thread": str(record.thread),
+                        "process": str(record.process),
+                        "timestamp": int(record.created)
+                    }
+                    
+                    if record.exc_info:
+                        log_content["exception"] = self.format(record)
+                    
+                    if hasattr(record, 'extra') and record.extra:
+                        log_content.update(record.extra)
+                    
+                    log_contents.append(log_content)
+                
+                # 发送到TLS
+                try:
+                    from volcengine.tls.tls_requests import PutLogsV2Request, PutLogsV2Logs
+                except ImportError:
+                    logging.getLogger("py-sdk.logger").error("无法导入 TLS 请求类")
+                    return
+                
+                logs = PutLogsV2Logs(source=self.service_name or "python-sdk", filename="application.log")
+                
+                for log_content in log_contents:
+                    timestamp = log_content.pop("timestamp")
+                    logs.add_log(contents=log_content, log_time=timestamp)
+                
+                request = PutLogsV2Request(self.topic_id, logs)
+                response = self.client.put_logs_v2(request)
+                
+                # 成功发送
+                logging.getLogger("py-sdk.logger").debug(f"批量发送 {len(batch_to_send)} 条日志成功")
+                return
+                
+            except Exception as e:
+                if attempt < self.retry_times - 1:
+                    logging.getLogger("py-sdk.logger").warning(
+                        f"TLS批量发送失败 (尝试 {attempt + 1}/{self.retry_times}): {str(e)}"
+                    )
+                    time.sleep(self.retry_delay * (2 ** attempt))  # 指数退避
+                else:
+                    logging.getLogger("py-sdk.logger").error(
+                        f"TLS批量发送最终失败，丢弃 {len(batch_to_send)} 条日志: {str(e)}"
+                    )
+    
+    def emit(self, record):
+        """异步发送日志记录"""
+        if not self.client or not self.topic_id:
+            return
+        
+        try:
+            # 非阻塞方式添加到队列
+            self.log_queue.put_nowait(record)
+        except queue.Full:
+            # 队列满了，丢弃日志并记录警告
+            logging.getLogger("py-sdk.logger").warning("TLS日志队列已满，丢弃日志记录")
+    
+    def close(self):
+        """关闭处理器"""
+        logging.getLogger("py-sdk.logger").info("正在关闭异步TLS日志处理器...")
+        
+        # 发送关闭信号
+        self.shutdown_event.set()
+        
+        # 向队列发送关闭信号
+        for _ in range(self.worker_threads):
+            try:
+                self.log_queue.put_nowait(None)
+            except queue.Full:
+                pass
+        
+        # 等待工作线程完成
+        self.executor.shutdown(wait=True, timeout=30)
+        
+        logging.getLogger("py-sdk.logger").info("异步TLS日志处理器已关闭")
+        super().close()
+
+
+# 保持原有的TLSHandler作为备选（重命名为SyncTLSHandler）
+class SyncTLSHandler(logging.Handler):
+    """同步火山引擎 TLS 日志处理器（原版本）"""
+    
+    def __init__(self, config: Dict[str, Any], topic_id: str = None, service_name: str = None):
+        super().__init__()
+        self.config = config
+        self.topic_id = topic_id or config.get("topic_id", "")
+        self.service_name = service_name or config.get("service_name", "")
+        self.client = None
+        self._init_client()
+    
+    def _init_client(self):
+        """初始化 TLS 客户端"""
+        try:
+            tls_config = self._parse_tls_config()
+            
+            if not tls_config or not tls_config.get("endpoint"):
+                logging.getLogger("py-sdk.logger").info("TLS 配置为空或无效，跳过初始化")
+                return
+            
+            try:
+                from volcengine.tls.TLSService import TLSService
+            except ImportError as e:
+                logging.getLogger("py-sdk.logger").warning(
+                    f"火山引擎 TLS SDK 未安装，TLS 日志功能不可用: {str(e)}. "
+                    f"请安装: pip install volcengine"
+                )
+                return
+            
+            region = tls_config.get("region", "cn-beijing")
+            endpoint = tls_config.get("endpoint", "")
+            if not endpoint:
+                endpoint = f"https://tls-{region}.volces.com"
+            
+            self.client = TLSService(
+                endpoint=endpoint,
+                access_key_id=tls_config.get("access_key_id", ""),
+                access_key_secret=tls_config.get("access_key_secret", ""),
+                region=region
+            )
+            
+            token = tls_config.get("token", "")
+            if token:
+                self.client.set_session_token(token)
+            
+            logging.getLogger("py-sdk.logger").info("同步TLS客户端初始化成功")
+            
+        except Exception as e:
+            logging.getLogger("py-sdk.logger").error(f"同步TLS客户端初始化失败: {str(e)}")
+            self.client = None
+    
+    def _parse_tls_config(self) -> Dict[str, str]:
+        """解析 TLS 配置，支持多种格式"""
+        if "endpoint" in self.config:
+            return {
+                "endpoint": self.config.get("endpoint", ""),
+                "access_key_id": self.config.get("access_key_id", ""),
+                "access_key_secret": self.config.get("access_key_secret", ""),
+                "region": self.config.get("region", "cn-beijing"),
+                "token": self.config.get("token", "")
+            }
+        
+        try:
+            from nacos_sdk.api import get_config
+            import json
+            
+            tls_config = get_config("tls.log.config")
+            if tls_config:
+                config_data = json.loads(tls_config)
+                
+                if "VOLCENGINE_ENDPOINT" in config_data:
+                    return {
+                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
+                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
+                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
+                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
+                        "token": config_data.get("VOLCENGINE_TOKEN", "")
+                    }
+            
+            volcengine_config = get_config("volcengine.json")
+            if volcengine_config:
+                config_data = json.loads(volcengine_config)
+                
+                if "VOLCENGINE_ENDPOINT" in config_data:
+                    return {
+                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
+                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
+                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
+                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
+                        "token": config_data.get("VOLCENGINE_TOKEN", "")
+                    }
+                else:
+                    return {
+                        "endpoint": config_data.get("endpoint", ""),
+                        "access_key_id": config_data.get("access_key_id", ""),
+                        "access_key_secret": config_data.get("access_key_secret", ""),
+                        "region": config_data.get("region", "cn-beijing"),
+                        "token": config_data.get("token", "")
+                    }
+            
+        except Exception as e:
+            logging.getLogger("py-sdk.logger").info(f"从 Nacos 获取火山引擎配置失败: {str(e)}")
+        
+        return {}
+
     def emit(self, record):
         """发送日志到 TLS"""
         if not self.client or not self.topic_id:
             return
         
         try:
-            # 获取 trace_id
             trace_id = getattr(record, 'trace_id', 'unknown')
             
-            # 构建日志内容（按照火山引擎TLS要求的格式）
             log_content = {
                 "level": record.levelname,
                 "logger": record.name,
@@ -202,44 +472,36 @@ class TLSHandler(logging.Handler):
                 "process": str(record.process)
             }
             
-            # 添加异常信息（如果有）
             if record.exc_info:
                 log_content["exception"] = self.format(record)
             
-            # 添加额外的字段（如果有）
             if hasattr(record, 'extra') and record.extra:
                 log_content.update(record.extra)
             
-            # 使用当前时间戳（秒）
             timestamp = int(record.created)
             
-            # 导入必要的类
             try:
                 from volcengine.tls.tls_requests import PutLogsV2Request, PutLogsV2Logs
             except ImportError:
                 print("无法导入 TLS 请求类，请确认 volcengine 包已正确安装", file=sys.stderr)
                 return
             
-            # 构建 PutLogsV2Logs 对象
             logs = PutLogsV2Logs(source=self.service_name or "python-sdk", filename="application.log")
-            
-            # 添加日志项
             logs.add_log(contents=log_content, log_time=timestamp)
             
-            # 构建 PutLogsV2Request
             request = PutLogsV2Request(self.topic_id, logs)
             
-            # 调用 TLS API
             try:
                 response = self.client.put_logs_v2(request)
-                # 检查响应（put_logs_v2 通常返回 None 或简单对象）
-                # 如果没有异常，说明发送成功
             except Exception as api_error:
                 print(f"TLS API 调用失败: {str(api_error)}", file=sys.stderr)
             
         except Exception as e:
-            # 避免日志处理器自身的错误影响应用
             print(f"TLS 日志发送失败: {str(e)}", file=sys.stderr)
+
+
+# 为了向后兼容，保持TLSHandler指向异步版本
+TLSHandler = AsyncTLSHandler
 
 
 class SDKLogger:
@@ -447,14 +709,49 @@ class LoggerManager:
         # TLS 处理器
         if self.config["handlers"]["tls"]["enabled"]:
             tls_config = self.config["handlers"]["tls"]
-            tls_handler = TLSHandler(
-                config=tls_config,
-                topic_id=self.topic_id or tls_config.get("topic_id"),
-                service_name=self.service_name or tls_config.get("service_name")
-            )
+            
+            # 检查是否使用同步模式
+            use_sync = tls_config.get("sync_mode", False)
+            
+            if use_sync:
+                # 使用同步处理器（原版本）
+                tls_handler = SyncTLSHandler(
+                    config=tls_config,
+                    topic_id=self.topic_id or tls_config.get("topic_id"),
+                    service_name=self.service_name or tls_config.get("service_name")
+                )
+                logging.getLogger("py-sdk.logger").info("使用同步TLS日志处理器")
+            else:
+                # 使用异步处理器（默认）
+                tls_handler = AsyncTLSHandler(
+                    config=tls_config,
+                    topic_id=self.topic_id or tls_config.get("topic_id"),
+                    service_name=self.service_name or tls_config.get("service_name")
+                )
+                logging.getLogger("py-sdk.logger").info("使用异步TLS日志处理器")
+            
             tls_handler.setLevel(getattr(logging, tls_config.get("level", "INFO").upper()))
             tls_handler.setFormatter(formatter)
             root_logger.addHandler(tls_handler)
+            
+            # 保存TLS处理器引用，用于关闭时清理
+            self.tls_handler = tls_handler
+    
+    def close(self):
+        """关闭日志管理器"""
+        logging.getLogger("py-sdk.logger").info("正在关闭日志管理器...")
+        
+        # 关闭TLS处理器
+        if hasattr(self, 'tls_handler') and self.tls_handler:
+            self.tls_handler.close()
+        
+        # 关闭其他处理器
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers[:]:
+            handler.close()
+            root_logger.removeHandler(handler)
+        
+        logging.getLogger("py-sdk.logger").info("日志管理器已关闭")
     
     def get_logger(self, name: str) -> SDKLogger:
         """获取日志记录器"""
