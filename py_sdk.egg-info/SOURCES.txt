@@ -35,11 +35,6 @@ examples/simple_usage.py
 examples/test_nacos_env.py
 examples/test_tls_logging.py
 examples/tls_logging_example.py
-examples/nacos_configs/http.json
-examples/nacos_configs/logger.json
-examples/nacos_configs/services.json
-examples/nacos_configs/tls.log.config.json
-examples/nacos_configs/volcengine.json
 http_client/__init__.py
 http_client/client.py
 http_client/code.py
