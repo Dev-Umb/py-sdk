@@ -19,7 +19,7 @@ class NacosClient:
         
         Args:
             server_addresses: Nacos服务器地址，格式为 "ip1:port1,ip2:port2"
-                             如果为None，将从环境变量NACOS_SERVER_ADDRESSES读取
+                             如果为None，将从环境变量NACOS_ADDRESS读取
                              如果环境变量也没有，则使用默认地址 "127.0.0.1:8848"
             namespace: 命名空间ID，可从环境变量NACOS_NAMESPACE读取
             username: 用户名，如果启用了认证，可从环境变量NACOS_USERNAME读取
@@ -56,7 +56,7 @@ class NacosClient:
             addresses = server_addresses.split(',')
         else:
             # 从环境变量读取
-            env_addresses = os.getenv('NACOS_SERVER_ADDRESSES')
+            env_addresses = os.getenv('NACOS_ADDRESS')
             if env_addresses:
                 addresses = env_addresses.split(',')
             else:
@@ -349,7 +349,7 @@ def init_nacos_client(server_addresses: str = None, namespace: str = "",
     
     Args:
         server_addresses: Nacos服务器地址，格式为 "ip1:port1,ip2:port2"
-                         如果为None，将从环境变量NACOS_SERVER_ADDRESSES读取
+                         如果为None，将从环境变量NACOS_ADDRESS读取
                          如果环境变量也没有，则使用默认地址 "127.0.0.1:8848"
         namespace: 命名空间ID，可从环境变量NACOS_NAMESPACE读取
         username: 用户名，如果启用了认证，可从环境变量NACOS_USERNAME读取
@@ -383,7 +383,7 @@ def registerNacos(service_name: str, port: int,
         service_name: 服务名称
         port: 服务端口
         server_addresses: Nacos服务器地址，格式为 "ip1:port1,ip2:port2"
-                         如果为None，将从环境变量NACOS_SERVER_ADDRESSES读取
+                         如果为None，将从环境变量NACOS_ADDRESS读取
                          如果环境变量也没有，则使用默认地址 "127.0.0.1:8848"
         namespace: 命名空间ID，可从环境变量NACOS_NAMESPACE读取
         username: 用户名，如果启用了认证，可从环境变量NACOS_USERNAME读取

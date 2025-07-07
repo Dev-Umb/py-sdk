@@ -11,7 +11,7 @@ import os
 import sys
 
 # 设置环境变量（实际使用时可以通过 .env 文件或系统环境变量设置）
-os.environ.setdefault('NACOS_SERVER_ADDRESSES', '127.0.0.1:8848')
+os.environ.setdefault('NACOS_ADDRESS', '127.0.0.1:8848')
 os.environ.setdefault('NACOS_NAMESPACE', 'dev')
 
 def main():

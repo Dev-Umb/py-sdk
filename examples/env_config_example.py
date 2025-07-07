@@ -59,7 +59,7 @@ def show_current_config():
     
     # SDK 相关的环境变量
     sdk_env_vars = [
-        'NACOS_SERVER_ADDRESSES',
+        'NACOS_ADDRESS',
         'NACOS_NAMESPACE', 
         'NACOS_USERNAME',
         'NACOS_PASSWORD',

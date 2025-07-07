@@ -14,7 +14,7 @@ def test_env_vars():
     print("=== 测试环境变量配置 ===")
     
     # 清除所有环境变量
-    env_vars = ['NACOS_SERVER_ADDRESSES', 'NACOS_NAMESPACE', 'NACOS_USERNAME', 'NACOS_PASSWORD']
+    env_vars = ['NACOS_ADDRESS', 'NACOS_NAMESPACE', 'NACOS_USERNAME', 'NACOS_PASSWORD']
     for var in env_vars:
         if var in os.environ:
             del os.environ[var]
@@ -29,7 +29,7 @@ def test_env_vars():
     
     # 测试2: 环境变量配置
     print("\n2. 测试环境变量配置:")
-    os.environ['NACOS_SERVER_ADDRESSES'] = 'test1.example.com:8848,test2.example.com:8848'
+    os.environ['NACOS_ADDRESS'] = 'test1.example.com:8848,test2.example.com:8848'
     os.environ['NACOS_NAMESPACE'] = 'test-env'
     os.environ['NACOS_USERNAME'] = 'test-user'
     os.environ['NACOS_PASSWORD'] = 'test-pass'

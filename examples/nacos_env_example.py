@@ -15,7 +15,7 @@ def example_with_env_vars():
     print("=== 使用环境变量配置Nacos ===")
     
     # 设置环境变量（在实际应用中，这些通常在启动脚本或容器配置中设置）
-    os.environ['NACOS_SERVER_ADDRESSES'] = '192.168.1.100:8848,192.168.1.101:8848'
+    os.environ['NACOS_ADDRESS'] = '192.168.1.100:8848,192.168.1.101:8848'
     os.environ['NACOS_NAMESPACE'] = 'dev'
     os.environ['NACOS_USERNAME'] = 'nacos'
     os.environ['NACOS_PASSWORD'] = 'nacos'
@@ -32,7 +32,7 @@ def example_with_env_vars():
     
     if success:
         print("✅ 服务注册成功（使用环境变量配置）")
-        print(f"   服务器地址: {os.environ['NACOS_SERVER_ADDRESSES']}")
+        print(f"   服务器地址: {os.environ['NACOS_ADDRESS']}")
         print(f"   命名空间: {os.environ['NACOS_NAMESPACE']}")
         
         # 等待一段时间
@@ -49,7 +49,7 @@ def example_with_mixed_config():
     print("\n=== 混合配置示例 ===")
     
     # 设置部分环境变量
-    os.environ['NACOS_SERVER_ADDRESSES'] = '127.0.0.1:8848'
+    os.environ['NACOS_ADDRESS'] = '127.0.0.1:8848'
     os.environ['NACOS_NAMESPACE'] = 'test'
     # 用户名和密码通过参数传递
     
@@ -79,7 +79,7 @@ def example_with_default_config():
     print("\n=== 使用默认配置示例 ===")
     
     # 清除环境变量，使用默认配置
-    env_vars_to_clear = ['NACOS_SERVER_ADDRESSES', 'NACOS_NAMESPACE', 'NACOS_USERNAME', 'NACOS_PASSWORD']
+    env_vars_to_clear = ['NACOS_ADDRESS', 'NACOS_NAMESPACE', 'NACOS_USERNAME', 'NACOS_PASSWORD']
     for var in env_vars_to_clear:
         if var in os.environ:
             del os.environ[var]
@@ -107,7 +107,7 @@ def example_direct_client_usage():
     print("\n=== 直接使用客户端示例 ===")
     
     # 设置环境变量
-    os.environ['NACOS_SERVER_ADDRESSES'] = '127.0.0.1:8848'
+    os.environ['NACOS_ADDRESS'] = '127.0.0.1:8848'
     os.environ['NACOS_NAMESPACE'] = 'prod'
     
     # 初始化客户端（从环境变量读取配置）
@@ -145,7 +145,7 @@ def show_env_priority():
     print("优先级：参数 > 环境变量 > 默认值")
     
     # 设置环境变量
-    os.environ['NACOS_SERVER_ADDRESSES'] = '192.168.1.100:8848'
+    os.environ['NACOS_ADDRESS'] = '192.168.1.100:8848'
     os.environ['NACOS_NAMESPACE'] = 'env-namespace'
     
     # 通过参数覆盖环境变量

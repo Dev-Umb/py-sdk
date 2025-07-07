@@ -71,7 +71,7 @@ def _init_client():
     global _config_client
     if _config_client is None:
         # 从环境变量读取配置
-        server_addresses = os.getenv('NACOS_SERVER_ADDRESSES', '127.0.0.1:8848')
+        server_addresses = os.getenv('NACOS_ADDRESS', '127.0.0.1:8848')
         namespace = os.getenv('NACOS_NAMESPACE', '')
         
         # 如果有多个地址，取第一个作为配置客户端地址
