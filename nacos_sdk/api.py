@@ -1,9 +1,9 @@
-import logging
 import os
 import requests
 from typing import Optional
-
-logger = logging.getLogger("nacos-api")
+import py_sdk
+import py_sdk.logger as logging
+logger = logging.get_logger("nacos-api")
 
 class NacosConfigClient:
     """Nacos配置管理客户端"""
@@ -16,10 +16,11 @@ class NacosConfigClient:
             server_address: Nacos服务器地址，格式为 "ip:port"
             namespace: 命名空间ID，默认为空
         """
+
         self.server_address = server_address
         self.namespace = namespace
         self.base_url = f"http://{server_address}/nacos/v1/cs/configs"
-        logger.info(f"初始化Nacos配置客户端: {server_address}, namespace: {namespace}")
+        logger.info(py_sdk.create_context(),f"初始化Nacos配置客户端: {server_address}, namespace: {namespace}")
     
     def get_config(self, data_id: str, group: str = "DEFAULT_GROUP") -> Optional[str]:
         """
@@ -32,6 +33,7 @@ class NacosConfigClient:
         Returns:
             配置内容字符串，如果获取失败返回None
         """
+        ctx = py_sdk.create_context()
         try:
             params = {
                 "dataId": data_id,
@@ -46,20 +48,20 @@ class NacosConfigClient:
             
             if response.status_code == 200:
                 config_content = response.text
-                logger.info(f"成功获取配置: dataId={data_id}, group={group}")
+                logger.info(ctx,f"成功获取配置: dataId={data_id}, group={group}")
                 return config_content
             elif response.status_code == 404:
                 logger.warning(f"配置不存在: dataId={data_id}, group={group}")
                 return None
             else:
-                logger.error(f"获取配置失败: status={response.status_code}, text={response.text}")
+                logger.error(ctx,f"获取配置失败: status={response.status_code}, text={response.text}")
                 return None
                 
         except requests.exceptions.Timeout:
-            logger.error(f"获取配置超时: dataId={data_id}, group={group}")
+            logger.error(ctx,f"获取配置超时: dataId={data_id}, group={group}")
             return None
         except Exception as e:
-            logger.error(f"获取配置异常: {str(e)}")
+            logger.error(ctx,f"获取配置异常: {str(e)}")
             return None
 
 
@@ -78,7 +80,7 @@ def _init_client():
         server_address = server_addresses.split(',')[0].strip()
         
         _config_client = NacosConfigClient(server_address, namespace)
-        logger.info("Nacos配置客户端已初始化")
+        logger.info(py_sdk.create_context(),"Nacos配置客户端已初始化")
 
 def get_config(data_id: str, group: str = "DEFAULT_GROUP") -> Optional[str]:
     """

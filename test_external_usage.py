@@ -105,7 +105,7 @@ def test_py_sdk_usage():
         service_logger = get_logger("coc_rules.server")
         
         # 3. 记录请求开始
-        service_logger.info(request_ctx, "开始处理游戏请求")
+        service_logger.info(ctx,request_ctx, "开始处理游戏请求")
         
         # 4. 模拟业务逻辑
         game_data = {
@@ -115,7 +115,7 @@ def test_py_sdk_usage():
         }
         
         # 5. 记录业务逻辑完成
-        service_logger.info(request_ctx, f"游戏数据处理完成: {game_data['game_id']}")
+        service_logger.info(ctx,request_ctx, f"游戏数据处理完成: {game_data['game_id']}")
         
         # 6. 创建响应
         api_response = create_response(
@@ -125,7 +125,7 @@ def test_py_sdk_usage():
         )
         
         # 7. 记录请求完成
-        service_logger.info(request_ctx, "请求处理完成")
+        service_logger.info(ctx,request_ctx, "请求处理完成")
         
         print("✅ 完整工作流程测试成功")
         print(f"   TraceID: {request_ctx.trace_id}")

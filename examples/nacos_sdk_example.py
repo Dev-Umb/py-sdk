@@ -262,7 +262,7 @@ class ConfigWatcher:
         self.thread = threading.Thread(target=self._watch_config, daemon=True)
         self.thread.start()
         
-        self.logger.info(self.ctx, "配置监听器启动")
+        self.logger.info(ctx,self.ctx, "配置监听器启动")
         print("  ✓ 配置监听器启动")
     
     def stop(self):
@@ -274,7 +274,7 @@ class ConfigWatcher:
         if self.thread:
             self.thread.join(timeout=1)
         
-        self.logger.info(self.ctx, "配置监听器停止")
+        self.logger.info(ctx,self.ctx, "配置监听器停止")
         print("  ✓ 配置监听器停止")
     
     def _watch_config(self):
@@ -295,7 +295,7 @@ class ConfigWatcher:
                         
                         if key in self.last_config_hash:
                             if self.last_config_hash[key] != config_hash:
-                                self.logger.info(self.ctx, "配置发生变化", extra={
+                                self.logger.info(ctx,self.ctx, "配置发生变化", extra={
                                     "data_id": data_id,
                                     "group": group,
                                     "config_length": len(config)
@@ -308,7 +308,7 @@ class ConfigWatcher:
                 time.sleep(5)  # 每5秒检查一次
                 
             except Exception as e:
-                self.logger.error(self.ctx, "配置监听异常", extra={
+                self.logger.error(ctx,self.ctx, "配置监听异常", extra={
                     "error": str(e)
                 })
                 time.sleep(10)  # 异常时等待更长时间
@@ -319,20 +319,20 @@ class ConfigWatcher:
             if data_id == "app.json":
                 # 处理应用配置变化
                 config_data = json.loads(config)
-                self.logger.info(self.ctx, "应用配置已更新", extra={
+                self.logger.info(ctx,self.ctx, "应用配置已更新", extra={
                     "config_keys": list(config_data.keys())
                 })
                 
             elif data_id == "database.yml":
                 # 处理数据库配置变化
-                self.logger.info(self.ctx, "数据库配置已更新")
+                self.logger.info(ctx,self.ctx, "数据库配置已更新")
                 
             elif data_id == "service.properties":
                 # 处理服务配置变化
-                self.logger.info(self.ctx, "服务配置已更新")
+                self.logger.info(ctx,self.ctx, "服务配置已更新")
                 
         except Exception as e:
-            self.logger.error(self.ctx, "配置处理失败", extra={
+            self.logger.error(ctx,self.ctx, "配置处理失败", extra={
                 "data_id": data_id,
                 "group": group,
                 "error": str(e)

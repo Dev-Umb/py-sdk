@@ -34,7 +34,6 @@ class NacosClient:
         self.auth_token = None
         self.token_ttl = 0
         
-        logger.info(f"Initialized Nacos client with servers: {','.join(self.server_addresses)}")
         if self.namespace:
             logger.info(f"Using namespace: {self.namespace}")
         
@@ -135,7 +134,6 @@ class NacosClient:
                 "enabled": str(enabled).lower(),
                 "namespaceId": self.namespace
             }
-            
             params = self._build_request_params(params)
             response = requests.post(url, params=params)
             
@@ -181,7 +179,6 @@ class NacosClient:
                 "groupName": group_name,
                 "namespaceId": self.namespace
             }
-            
             params = self._build_request_params(params)
             response = requests.delete(url, params=params)
             
@@ -265,7 +262,7 @@ class NacosClient:
         启动心跳任务
         """
         instance_id = f"{ip}#{port}#{cluster_name}#{service_name}"
-        
+
         # 如果已存在，先停止
         self.stop_beat_task(instance_id)
         
@@ -311,7 +308,6 @@ class NacosClient:
             
             if clusters:
                 params["clusters"] = clusters
-                
             params = self._build_request_params(params)
             response = requests.get(url, params=params)
             
