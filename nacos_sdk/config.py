@@ -1,10 +1,9 @@
+import logging
 import os
 from typing import Dict, Any, Optional, List
 from pathlib import Path
-import py_sdk.logger as logging
-import py_sdk
 
-logger = logging.get_logger("nacos-config")
+logger = logging.getLogger("nacos-config")
 
 # 尝试加载.env文件
 try:
@@ -14,7 +13,7 @@ try:
     for env_path in env_paths:
         if os.path.exists(env_path):
             load_dotenv(env_path)
-            logger.info(py_sdk.create_context(),f"已从 {env_path} 加载环境变量配置")
+            logger.info(f"已从 {env_path} 加载环境变量配置")
             break
     else:
         logger.warning("未找到.env文件，将使用系统环境变量")
@@ -64,7 +63,6 @@ class NacosConfig:
         }
     
     def load_from_env(self) -> None:
-        ctx = py_sdk.create_context()
         """从环境变量加载配置"""
         self.config.update({
             "server_addresses": os.environ.get('NACOS_ADDRESS', self.config['server_addresses']),
@@ -72,12 +70,12 @@ class NacosConfig:
             "username": os.environ.get('NACOS_USERNAME', self.config['username']),
             "password": os.environ.get('NACOS_PASSWORD', self.config['password'])
         })
-        logger.info(ctx,"已从环境变量加载Nacos配置")
+        logger.info("已从环境变量加载Nacos配置")
         
         # 打印当前配置信息
-        logger.info(ctx,f"Nacos服务器地址: {self.config['server_addresses']}")
-        logger.info(ctx,f"Nacos命名空间: {self.config['namespace']}")
-        logger.info(ctx,f"Nacos认证信息: {'已配置' if self.config['username'] else '未配置'}")
+        logger.info(f"Nacos服务器地址: {self.config['server_addresses']}")
+        logger.info(f"Nacos命名空间: {self.config['namespace']}")
+        logger.info(f"Nacos认证信息: {'已配置' if self.config['username'] else '未配置'}")
     
     def get(self, key: str, default: Any = None) -> Any:
         """获取配置项"""
