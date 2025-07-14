@@ -38,13 +38,13 @@ class ServiceManager:
             self.cleanup_registered = True
         
         self.initialized = True
-        logger.info("服务管理器初始化成功")
+        logger.error("服务管理器初始化成功")
         return True
     
     def register_signal_handlers(self):
         """注册信号处理函数"""
         def signal_handler(sig, frame):
-            logger.info(f"接收到信号 {sig}，正在退出...")
+            logger.error(f"接收到信号 {sig}，正在退出...")
             self.cleanup()
         
         # 注册 SIGINT 和 SIGTERM 信号处理
@@ -109,7 +109,7 @@ class ServiceManager:
                 "cluster_name": cluster_name,
                 "group_name": group_name
             }
-            logger.info(f"服务 {service_name}:{port} 注册成功")
+            logger.error(f"服务 {service_name}:{port} 注册成功")
         else:
             logger.error(f"服务 {service_name}:{port} 注册失败")
         
@@ -147,7 +147,7 @@ class ServiceManager:
             
             if result:
                 del self.registered_services[service_key]
-                logger.info(f"服务 {service_name}:{port} 注销成功")
+                logger.error(f"服务 {service_name}:{port} 注销成功")
                 return True
             else:
                 logger.error(f"服务 {service_name}:{port} 注销失败")
@@ -167,7 +167,7 @@ class ServiceManager:
             )
             
             if result:
-                logger.info(f"服务 {service_name}:{port} 注销成功")
+                logger.error(f"服务 {service_name}:{port} 注销成功")
             else:
                 logger.error(f"服务 {service_name}:{port} 注销失败")
             
@@ -229,12 +229,12 @@ class ServiceManager:
             ):
                 success_count += 1
         
-        logger.info(f"从配置成功注册 {success_count}/{len(services)} 个服务")
+        logger.error(f"从配置成功注册 {success_count}/{len(services)} 个服务")
         return success_count, len(services)
     
     def cleanup(self):
         """清理所有已注册的服务"""
-        logger.info("开始清理已注册的服务")
+        logger.error("开始清理已注册的服务")
         
         for service_key, service_info in list(self.registered_services.items()):
             self.unregister_service(
@@ -245,7 +245,7 @@ class ServiceManager:
                 group_name=service_info["group_name"]
             )
         
-        logger.info("服务清理完成")
+        logger.error("服务清理完成")
 
 
 # 全局服务管理器实例

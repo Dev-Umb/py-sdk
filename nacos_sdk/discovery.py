@@ -1,11 +1,11 @@
-import logging
+
 import random
 from typing import Dict, Any, List, Optional, Tuple, Callable, Union
 
 from .client import get_nacos_client
 from .exceptions import NacosException
-
-logger = logging.getLogger("nacos-discovery")
+import py_sdk.logger as logging
+logger = logging.get_logger("nacos-discovery")
 
 def get_service_instances(service_name: str, group_name: str = "DEFAULT_GROUP",
                          clusters: str = None, healthy_only: bool = True) -> List[Dict[str, Any]]:

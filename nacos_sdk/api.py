@@ -2,7 +2,6 @@ import logging
 import os
 import requests
 from typing import Optional
-
 logger = logging.getLogger("nacos-api")
 
 class NacosConfigClient:
@@ -16,6 +15,7 @@ class NacosConfigClient:
             server_address: Nacos服务器地址，格式为 "ip:port"
             namespace: 命名空间ID，默认为空
         """
+
         self.server_address = server_address
         self.namespace = namespace
         self.base_url = f"http://{server_address}/nacos/v1/cs/configs"
