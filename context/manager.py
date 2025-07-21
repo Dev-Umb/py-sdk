@@ -10,6 +10,7 @@ import uuid
 import contextvars
 import logging
 from typing import Optional, Dict, Any, Union
+from contextlib import contextmanager
 
 logger = logging.getLogger("py_sdk.context")
 
@@ -235,3 +236,32 @@ def create_context_from_grpc(grpc_context) -> Context:
     context = manager.create_context_from_grpc(grpc_context)
     manager.set_context(context)
     return context 
+
+
+@contextmanager
+def context_scope(trace_id: str = None):
+    """
+    上下文作用域管理器，进入时自动创建/设置 context，退出时恢复原 context。
+    用于自动管理 traceID，无需业务手动传递。
+    
+    Example:
+        with context_scope():
+            ... # 该作用域内 logger 自动带 traceID
+    """
+    manager = get_context_manager()
+    prev_ctx = manager.get_current_context()
+    ctx = manager.create_context(trace_id=trace_id)
+    manager.set_context(ctx)
+    try:
+        yield ctx
+    finally:
+        if prev_ctx:
+            manager.set_context(prev_ctx)
+        else:
+            # 清空 contextvar
+            import contextvars
+            try:
+                _context_var = contextvars.ContextVar('request_context')
+                _context_var.set(None)
+            except Exception:
+                pass 

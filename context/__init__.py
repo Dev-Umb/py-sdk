@@ -27,7 +27,8 @@ from .manager import (
     set_context,
     get_trace_id,
     create_context_from_request,
-    create_context_from_grpc
+    create_context_from_grpc,
+    context_scope
 )
 
 __all__ = [
@@ -37,5 +38,6 @@ __all__ = [
     'set_context',
     'get_trace_id',
     'create_context_from_request',
-    'create_context_from_grpc'
+    'create_context_from_grpc',
+    'context_scope'
 ] 

@@ -541,27 +541,27 @@ class SDKLogger:
         # 记录日志
         self.logger.log(level, message, extra=extra, **log_kwargs)
     
-    def debug(self, context: Optional[Context], message: str, **kwargs):
+    def debug(self, message: str, context: Optional[Context] = None, **kwargs):
         """记录 DEBUG 级别日志"""
         self._log(logging.DEBUG, context, message, **kwargs)
     
-    def info(self, context: Optional[Context], message: str, **kwargs):
+    def info(self, message: str, context: Optional[Context] = None, **kwargs):
         """记录 INFO 级别日志"""
         self._log(logging.INFO, context, message, **kwargs)
     
-    def warning(self, context: Optional[Context], message: str, **kwargs):
+    def warning(self, message: str, context: Optional[Context] = None, **kwargs):
         """记录 WARNING 级别日志"""
         self._log(logging.WARNING, context, message, **kwargs)
     
-    def error(self, context: Optional[Context], message: str, **kwargs):
+    def error(self, message: str, context: Optional[Context] = None, **kwargs):
         """记录 ERROR 级别日志"""
         self._log(logging.ERROR, context, message, **kwargs)
     
-    def critical(self, context: Optional[Context], message: str, **kwargs):
+    def critical(self, message: str, context: Optional[Context] = None, **kwargs):
         """记录 CRITICAL 级别日志"""
         self._log(logging.CRITICAL, context, message, **kwargs)
     
-    def exception(self, context: Optional[Context], message: str, **kwargs):
+    def exception(self, message: str, context: Optional[Context] = None, **kwargs):
         """记录异常日志"""
         kwargs['exc_info'] = True
         self._log(logging.ERROR, context, message, **kwargs)
@@ -765,23 +765,23 @@ class LoggerManager:
 # 全局日志管理器实例
 _logger_manager: Optional[LoggerManager] = None
 
+# 全局logger实例和name
+_global_logger: Optional[SDKLogger] = None
+_global_logger_name: Optional[str] = None
 
-def init_logger_manager(config: Dict[str, Any], topic_id: str = None, service_name: str = None):
+
+def init_logger_manager(config: Dict[str, Any], topic_id: str = None, service_name: str = None, logger_name: str = None):
     """
-    初始化全局日志管理器
-    
-    Args:
-        config: 日志配置字典
-        topic_id: 火山引擎 TLS TopicID（必需，每个服务不同）
-        service_name: 服务名称（可选，用于日志标识）
-    
-    Note:
-        此函数只能调用一次，重复调用会被忽略
+    初始化全局日志管理器，并设置全局logger name
     """
-    global _logger_manager
+    global _logger_manager, _global_logger, _global_logger_name
     if _logger_manager is None:
         _logger_manager = LoggerManager(topic_id=topic_id, service_name=service_name)
         _logger_manager.init_from_config(config)
+        if logger_name is None:
+            logger_name = service_name
+        _global_logger_name = logger_name or "py_sdk"
+        _global_logger = _logger_manager.get_logger(_global_logger_name)
     else:
         logging.getLogger("py_sdk.logger").warning("日志管理器已经初始化，忽略重复初始化")
 
@@ -808,23 +808,12 @@ def get_logger_manager() -> LoggerManager:
     return _logger_manager
 
 
-def get_logger(name: str) -> SDKLogger:
+def get_logger() -> SDKLogger:
     """
-    获取日志记录器
-    
-    Args:
-        name: 日志记录器名称，通常使用 __name__
-        
-    Returns:
-        SDK 日志记录器实例
-        
-    Example:
-        >>> from py_sdk.logger import get_logger
-        >>> from py_sdk.context import create_context
-        >>> 
-        >>> logger = get_logger(__name__)
-        >>> ctx = create_context()
-        >>> logger.info(ctx, "这是一条日志")
+    获取全局日志记录器，无需传name
     """
-    manager = get_logger_manager()
-    return manager.get_logger(name) 
+    global _global_logger
+    if _global_logger is None:
+        # 若未初始化，使用默认配置和默认name
+        init_logger_manager({}, logger_name="py_sdk")
+    return _global_logger 

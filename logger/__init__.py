@@ -18,8 +18,11 @@ from .manager import (
     is_logger_initialized
 )
 
+# 全局logger实例，供直接import使用
+logger = get_logger()
+
 # 便捷的初始化函数
-def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, service_name=None, high_performance=True):
+def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, service_name=None, high_performance=True, logger_name=None):
     """
     便捷的日志初始化函数
     
@@ -101,10 +104,10 @@ def init_logger(level="INFO", console=True, file=None, tls=None, topic_id=None, 
         if isinstance(tls, dict):
             config["handlers"]["tls"].update(tls)
     
-    init_logger_manager(config, topic_id=topic_id, service_name=service_name)
+    init_logger_manager(config, topic_id=topic_id, service_name=service_name, logger_name=logger_name)
 
 __all__ = [
-    'get_logger',
+    'logger',
     'SDKLogger',
     'init_logger_manager',
     'get_logger_manager',

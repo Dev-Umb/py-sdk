@@ -9,7 +9,7 @@
 
 import time
 from context import create_context
-from logger import init_logger_manager, get_logger
+from logger import init_logger_manager, logger
 
 
 def main():
@@ -67,11 +67,10 @@ def basic_logging():
     ctx = create_context()
     
     # 获取日志记录器
-    logger = get_logger("basic-example")
     
     # 记录不同级别的日志
     logger.debug(ctx, "这是调试信息")
-    logger.info(ctx, "服务启动成功")
+    logger.info( "服务启动成功")
     logger.warning(ctx, "内存使用率较高")
     logger.error(ctx, "数据库连接失败")
     logger.critical(ctx, "系统即将崩溃")
@@ -85,12 +84,9 @@ def structured_logging():
     
     # 创建上下文
     ctx = create_context()
-    
-    # 获取日志记录器
-    logger = get_logger("structured-example")
-    
+
     # 用户登录日志
-    logger.info(ctx, "用户登录", extra={
+    logger.info( "用户登录", extra={
         "user_id": 12345,
         "username": "john_doe",
         "ip_address": "192.168.1.100",
@@ -98,7 +94,7 @@ def structured_logging():
     })
     
     # 订单创建日志
-    logger.info(ctx, "订单创建", extra={
+    logger.info( "订单创建", extra={
         "order_id": "ORD-2023-001",
         "user_id": 12345,
         "amount": 99.99,
@@ -107,7 +103,7 @@ def structured_logging():
     })
     
     # API 调用日志
-    logger.info(ctx, "API 调用", extra={
+    logger.info( "API 调用", extra={
         "method": "GET",
         "url": "/api/users/12345",
         "status_code": 200,
@@ -116,7 +112,7 @@ def structured_logging():
     })
     
     # 数据库操作日志
-    logger.info(ctx, "数据库查询", extra={
+    logger.info( "数据库查询", extra={
         "table": "users",
         "operation": "SELECT",
         "query_time": 25,
@@ -132,10 +128,7 @@ def exception_handling():
     
     # 创建上下文
     ctx = create_context()
-    
-    # 获取日志记录器
-    logger = get_logger("exception-example")
-    
+
     try:
         # 模拟业务异常
         raise ValueError("无效的用户ID")
@@ -187,15 +180,13 @@ def business_scenario():
 def user_registration_flow():
     """用户注册流程"""
     ctx = create_context()
-    logger = get_logger("user-service")
-    
-    logger.info(ctx, "用户注册流程开始", extra={
+    logger.info( "用户注册流程开始", extra={
         "flow": "user_registration",
         "step": "start"
     })
     
     # 步骤1：参数验证
-    logger.info(ctx, "参数验证", extra={
+    logger.info( "参数验证", extra={
         "flow": "user_registration",
         "step": "validation",
         "email": "user@example.com",
@@ -205,7 +196,7 @@ def user_registration_flow():
     time.sleep(0.1)  # 模拟处理时间
     
     # 步骤2：检查用户是否存在
-    logger.info(ctx, "检查用户唯一性", extra={
+    logger.info( "检查用户唯一性", extra={
         "flow": "user_registration",
         "step": "uniqueness_check",
         "check_result": "passed"
@@ -214,7 +205,7 @@ def user_registration_flow():
     time.sleep(0.1)
     
     # 步骤3：创建用户
-    logger.info(ctx, "创建用户记录", extra={
+    logger.info( "创建用户记录", extra={
         "flow": "user_registration",
         "step": "create_user",
         "user_id": 12345
@@ -223,14 +214,14 @@ def user_registration_flow():
     time.sleep(0.1)
     
     # 步骤4：发送欢迎邮件
-    logger.info(ctx, "发送欢迎邮件", extra={
+    logger.info( "发送欢迎邮件", extra={
         "flow": "user_registration",
         "step": "send_email",
         "email_type": "welcome",
         "user_id": 12345
     })
     
-    logger.info(ctx, "用户注册流程完成", extra={
+    logger.info( "用户注册流程完成", extra={
         "flow": "user_registration",
         "step": "complete",
         "user_id": 12345,
@@ -241,12 +232,11 @@ def user_registration_flow():
 def order_processing_flow():
     """订单处理流程"""
     ctx = create_context()
-    logger = get_logger("order-service")
     
     order_id = "ORD-2023-001"
     user_id = 12345
     
-    logger.info(ctx, "订单处理流程开始", extra={
+    logger.info("订单处理流程开始", extra={
         "flow": "order_processing",
         "step": "start",
         "order_id": order_id,
@@ -254,7 +244,7 @@ def order_processing_flow():
     })
     
     # 步骤1：库存检查
-    logger.info(ctx, "库存检查", extra={
+    logger.info( "库存检查", extra={
         "flow": "order_processing",
         "step": "inventory_check",
         "order_id": order_id,
@@ -266,7 +256,7 @@ def order_processing_flow():
     time.sleep(0.1)
     
     # 步骤2：价格计算
-    logger.info(ctx, "价格计算", extra={
+    logger.info( "价格计算", extra={
         "flow": "order_processing",
         "step": "price_calculation",
         "order_id": order_id,
@@ -278,7 +268,7 @@ def order_processing_flow():
     time.sleep(0.1)
     
     # 步骤3：支付处理
-    logger.info(ctx, "支付处理", extra={
+    logger.info( "支付处理", extra={
         "flow": "order_processing",
         "step": "payment",
         "order_id": order_id,
@@ -290,7 +280,7 @@ def order_processing_flow():
     time.sleep(0.2)
     
     # 步骤4：库存扣减
-    logger.info(ctx, "库存扣减", extra={
+    logger.info( "库存扣减", extra={
         "flow": "order_processing",
         "step": "inventory_deduction",
         "order_id": order_id,
@@ -302,7 +292,7 @@ def order_processing_flow():
     time.sleep(0.1)
     
     # 步骤5：订单完成
-    logger.info(ctx, "订单处理完成", extra={
+    logger.info( "订单处理完成", extra={
         "flow": "order_processing",
         "step": "complete",
         "order_id": order_id,
