@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional, Union
 import requests
 from requests.adapters import HTTPAdapter
 
+import py_sdk
 from ..context.manager import get_current_context
 from .response import APIResponse
 from .code import INTERNAL_SERVER_ERROR
@@ -53,7 +54,8 @@ class HttpClient:
         """
         self.config = self._load_config(config)
         self.session = self._create_session()
-        logger.info("HTTP 客户端初始化完成")
+        self.context = py_sdk.create_context()
+        logger.info(self.context,"HTTP 客户端初始化完成")
     
     def _load_config(self, config: Dict[str, Any] = None) -> Dict[str, Any]:
         """加载配置"""
@@ -69,12 +71,12 @@ class HttpClient:
                 nacos_data = json.loads(nacos_config)
                 result = DEFAULT_CONFIG.copy()
                 result.update(nacos_data)
-                logger.info("从 Nacos 加载 HTTP 配置成功")
+                logger.info(self.context,"从 Nacos 加载 HTTP 配置成功")
                 return result
         except Exception as e:
-            logger.warning(f"从 Nacos 加载 HTTP 配置失败: {str(e)}")
+            logger.warning(self.context, f"从 Nacos 加载 HTTP 配置失败: {str(e)}")
         
-        logger.info("使用默认 HTTP 配置")
+        logger.info(self.context,"使用默认 HTTP 配置")
         return DEFAULT_CONFIG.copy()
     
     def _create_session(self) -> requests.Session:
@@ -146,19 +148,19 @@ class HttpClient:
             return self._parse_response(response)
             
         except requests.exceptions.Timeout:
-            logger.error(f"请求超时: {method} {url}")
+            logger.error(self.context,f"请求超时: {method} {url}")
             return APIResponse(
                 business_code=INTERNAL_SERVER_ERROR,
                 data={"error": "请求超时"}
             )
         except requests.exceptions.ConnectionError:
-            logger.error(f"连接错误: {method} {url}")
+            logger.error(self.context,f"连接错误: {method} {url}")
             return APIResponse(
                 business_code=INTERNAL_SERVER_ERROR,
                 data={"error": "连接错误"}
             )
         except Exception as e:
-            logger.error(f"请求异常: {method} {url} - {str(e)}")
+            logger.error(self.context,f"请求异常: {method} {url} - {str(e)}")
             return APIResponse(
                 business_code=INTERNAL_SERVER_ERROR,
                 data={"error": f"请求异常: {str(e)}"}

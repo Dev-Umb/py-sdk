@@ -61,7 +61,6 @@ class ContextManager:
             return
         
         self.initialized = True
-        logger.info("上下文管理器初始化完成")
     
     def create_context(self, trace_id: str = None) -> Context:
         """创建新的上下文"""
