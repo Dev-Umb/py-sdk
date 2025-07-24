@@ -61,13 +61,13 @@ def service_registration():
     )
     
     if success:
-        logger.info(ctx, "服务注册成功", extra={
+        logger.info( "服务注册成功", extra={
             "service_name": "example-service",
             "port": 8080
         })
         print("  ✓ 基础服务注册成功")
     else:
-        logger.error(ctx, "服务注册失败")
+        logger.error( "服务注册失败")
         print("  ✗ 基础服务注册失败")
     
     # 多服务注册示例
@@ -98,13 +98,13 @@ def service_registration():
         )
         
         if success:
-            logger.info(ctx, "服务注册成功", extra={
+            logger.info( "服务注册成功", extra={
                 "service_name": service["name"],
                 "port": service["port"]
             })
             print(f"  ✓ {service['name']} 注册成功")
         else:
-            logger.error(ctx, "服务注册失败", extra={
+            logger.error( "服务注册失败", extra={
                 "service_name": service["name"]
             })
             print(f"  ✗ {service['name']} 注册失败")
@@ -125,15 +125,15 @@ def configuration_management():
     if app_config:
         try:
             config_data = json.loads(app_config)
-            logger.info(ctx, "应用配置获取成功", extra={
+            logger.info( "应用配置获取成功", extra={
                 "config_keys": list(config_data.keys())
             })
             print(f"  ✓ 应用配置: {config_data}")
         except json.JSONDecodeError:
-            logger.error(ctx, "应用配置格式错误")
+            logger.error( "应用配置格式错误")
             print(f"  ✗ 配置格式错误: {app_config}")
     else:
-        logger.warning(ctx, "应用配置不存在")
+        logger.warning( "应用配置不存在")
         print("  ⚠ 应用配置不存在，使用默认配置")
         # 使用默认配置
         default_config = {
@@ -154,10 +154,10 @@ def configuration_management():
     print("\n  获取数据库配置:")
     db_config = get_config("database.yml")
     if db_config:
-        logger.info(ctx, "数据库配置获取成功")
+        logger.info( "数据库配置获取成功")
         print(f"  ✓ 数据库配置: {db_config}")
     else:
-        logger.warning(ctx, "数据库配置不存在")
+        logger.warning( "数据库配置不存在")
         print("  ⚠ 数据库配置不存在")
     
     # 获取不同分组的配置
@@ -167,13 +167,13 @@ def configuration_management():
     for group in groups:
         config = get_config("service.properties", group)
         if config:
-            logger.info(ctx, "配置获取成功", extra={
+            logger.info( "配置获取成功", extra={
                 "group": group,
                 "config_length": len(config)
             })
             print(f"  ✓ {group}: {config[:50]}...")
         else:
-            logger.info(ctx, "配置不存在", extra={"group": group})
+            logger.info( "配置不存在", extra={"group": group})
             print(f"  - {group}: 配置不存在")
 
 
@@ -186,7 +186,7 @@ def service_runtime_simulation():
     
     # 注册信号处理器
     def signal_handler(sig, frame):
-        logger.info(ctx, "接收到退出信号，开始清理...")
+        logger.info( "接收到退出信号，开始清理...")
         print("\n  接收到退出信号，正在注销服务...")
         
         # 注销所有服务
@@ -200,13 +200,13 @@ def service_runtime_simulation():
         for service_name, port in services:
             success = unregisterNacos(service_name, port)
             if success:
-                logger.info(ctx, "服务注销成功", extra={
+                logger.info( "服务注销成功", extra={
                     "service_name": service_name,
                     "port": port
                 })
                 print(f"  ✓ {service_name} 注销成功")
             else:
-                logger.error(ctx, "服务注销失败", extra={
+                logger.error( "服务注销失败", extra={
                     "service_name": service_name
                 })
                 print(f"  ✗ {service_name} 注销失败")
@@ -229,7 +229,7 @@ def service_runtime_simulation():
     try:
         # 模拟业务处理
         for i in range(10):
-            logger.info(ctx, "处理业务请求", extra={
+            logger.info( "处理业务请求", extra={
                 "request_id": f"REQ-{i+1:03d}",
                 "processing_time": 100 + i * 10
             })
@@ -262,7 +262,7 @@ class ConfigWatcher:
         self.thread = threading.Thread(target=self._watch_config, daemon=True)
         self.thread.start()
         
-        self.logger.info(ctx,self.ctx, "配置监听器启动")
+        self.logger.info(self.ctx, "配置监听器启动")
         print("  ✓ 配置监听器启动")
     
     def stop(self):
@@ -274,7 +274,7 @@ class ConfigWatcher:
         if self.thread:
             self.thread.join(timeout=1)
         
-        self.logger.info(ctx,self.ctx, "配置监听器停止")
+        self.logger.info(self.ctx, "配置监听器停止")
         print("  ✓ 配置监听器停止")
     
     def _watch_config(self):
@@ -295,7 +295,7 @@ class ConfigWatcher:
                         
                         if key in self.last_config_hash:
                             if self.last_config_hash[key] != config_hash:
-                                self.logger.info(ctx,self.ctx, "配置发生变化", extra={
+                                self.logger.info(self.ctx, "配置发生变化", extra={
                                     "data_id": data_id,
                                     "group": group,
                                     "config_length": len(config)
@@ -308,7 +308,7 @@ class ConfigWatcher:
                 time.sleep(5)  # 每5秒检查一次
                 
             except Exception as e:
-                self.logger.error(ctx,self.ctx, "配置监听异常", extra={
+                self.logger.error(self.ctx, "配置监听异常", extra={
                     "error": str(e)
                 })
                 time.sleep(10)  # 异常时等待更长时间
@@ -319,20 +319,20 @@ class ConfigWatcher:
             if data_id == "app.json":
                 # 处理应用配置变化
                 config_data = json.loads(config)
-                self.logger.info(ctx,self.ctx, "应用配置已更新", extra={
+                self.logger.info(self.ctx, "应用配置已更新", extra={
                     "config_keys": list(config_data.keys())
                 })
                 
             elif data_id == "database.yml":
                 # 处理数据库配置变化
-                self.logger.info(ctx,self.ctx, "数据库配置已更新")
+                self.logger.info(self.ctx, "数据库配置已更新")
                 
             elif data_id == "service.properties":
                 # 处理服务配置变化
-                self.logger.info(ctx,self.ctx, "服务配置已更新")
+                self.logger.info(self.ctx, "服务配置已更新")
                 
         except Exception as e:
-            self.logger.error(ctx,self.ctx, "配置处理失败", extra={
+            self.logger.error(self.ctx, "配置处理失败", extra={
                 "data_id": data_id,
                 "group": group,
                 "error": str(e)

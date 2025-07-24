@@ -38,9 +38,9 @@ def test_py_sdk_usage():
         logger = get_logger("external-project")
         
         # 记录各种级别的日志
-        logger.info(ctx, "外部项目启动成功")
+        logger.info( "外部项目启动成功")
         logger.debug(ctx, "调试信息")
-        logger.warning(ctx, "警告信息")
+        logger.warning( "警告信息")
         
         print("✅ 日志记录成功")
         
@@ -105,7 +105,7 @@ def test_py_sdk_usage():
         service_logger = get_logger("coc_rules.server")
         
         # 3. 记录请求开始
-        service_logger.info(ctx,request_ctx, "开始处理游戏请求")
+        service_logger.info(request_ctx, "开始处理游戏请求")
         
         # 4. 模拟业务逻辑
         game_data = {
@@ -115,7 +115,7 @@ def test_py_sdk_usage():
         }
         
         # 5. 记录业务逻辑完成
-        service_logger.info(ctx,request_ctx, f"游戏数据处理完成: {game_data['game_id']}")
+        service_logger.info(request_ctx, f"游戏数据处理完成: {game_data['game_id']}")
         
         # 6. 创建响应
         api_response = create_response(
@@ -125,7 +125,7 @@ def test_py_sdk_usage():
         )
         
         # 7. 记录请求完成
-        service_logger.info(ctx,request_ctx, "请求处理完成")
+        service_logger.info(request_ctx, "请求处理完成")
         
         print("✅ 完整工作流程测试成功")
         print(f"   TraceID: {request_ctx.trace_id}")
@@ -161,7 +161,7 @@ ctx = create_context()
 logger = get_logger("your-service")
 
 # 3. 记录日志（自动包含TraceID）
-logger.info(ctx, "服务启动")
+logger.info( "服务启动")
 
 # 4. 创建API响应
 response = create_response(ctx, code=OK, data={"status": "success"})

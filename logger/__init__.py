@@ -7,7 +7,7 @@
 使用方法：
 1. 在应用启动时调用一次 init_logger() 或 init_logger_manager()
 2. 在任何地方使用 get_logger(__name__) 获取logger实例
-3. 使用 logger.info(ctx,context, message) 记录日志
+3. 使用 logger.info(context, message) 记录日志
 """
 
 from .manager import (

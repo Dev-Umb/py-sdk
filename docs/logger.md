@@ -25,9 +25,9 @@ ctx = create_context()
 logger = get_logger("my-service")
 
 # 记录日志（自动包含 TraceID）
-logger.info(ctx, "服务启动成功")
+logger.info( "服务启动成功")
 logger.warning(ctx, "内存使用率较高")
-logger.error(ctx, "数据库连接失败")
+logger.error( "数据库连接失败")
 
 # 输出示例:
 # 2025-07-03 18:40:00,123 - my-service - INFO - [abc123def456] - 服务启动成功
@@ -43,14 +43,14 @@ logger = get_logger("user-service")
 ctx = create_context()
 
 # 带额外字段的结构化日志
-logger.info(ctx, "用户登录", extra={
+logger.info( "用户登录", extra={
     "user_id": 12345,
     "username": "john_doe",
     "ip_address": "192.168.1.100"
 })
 
 # 业务操作日志
-logger.info(ctx, "订单创建", extra={
+logger.info( "订单创建", extra={
     "order_id": "ORD-2023-001",
     "amount": 99.99,
     "currency": "CNY"
@@ -188,7 +188,7 @@ logger = get_logger("api")
 async def get_user(user_id: int):
     ctx = create_context()
     
-    logger.info(ctx, "获取用户信息", extra={
+    logger.info( "获取用户信息", extra={
         "user_id": user_id,
         "endpoint": "/users/{user_id}"
     })
@@ -196,7 +196,7 @@ async def get_user(user_id: int):
     # 业务逻辑
     user = {"id": user_id, "name": "张三"}
     
-    logger.info(ctx, "用户信息获取成功", extra={
+    logger.info( "用户信息获取成功", extra={
         "user_id": user_id,
         "user_name": user["name"]
     })
@@ -216,12 +216,12 @@ def process_data(data):
     ctx = create_context()
     
     try:
-        logger.info(ctx, "开始处理数据", extra={"data_size": len(data)})
+        logger.info( "开始处理数据", extra={"data_size": len(data)})
         
         # 业务逻辑
         result = complex_processing(data)
         
-        logger.info(ctx, "数据处理完成", extra={"result_size": len(result)})
+        logger.info( "数据处理完成", extra={"result_size": len(result)})
         return result
         
     except Exception as e:

@@ -21,7 +21,7 @@ Python 微服务通用 SDK (py_sdk)
     >>> 
     >>> # 获取日志记录器并记录日志
     >>> logger = get_logger("my-service")
-    >>> logger.info(ctx, "服务启动成功")
+    >>> logger.info( "服务启动成功")
 """
 
 __version__ = "1.0.0"

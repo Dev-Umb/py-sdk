@@ -137,7 +137,7 @@ print(f"TraceID: {ctx.trace_id}")
 
 # 获取日志记录器
 logger = get_logger("test")
-logger.info(ctx, "py_sdk 安装成功！")
+logger.info( "py_sdk 安装成功！")
 ```
 
 ### 运行示例代码
@@ -201,7 +201,7 @@ from logger import get_logger
 def main():
     ctx = create_context()
     logger = get_logger("your-app")
-    logger.info(ctx, "应用启动")
+    logger.info( "应用启动")
 ```
 
 ## 🔍 常见问题

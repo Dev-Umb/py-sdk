@@ -71,8 +71,8 @@ def basic_logging():
     # 记录不同级别的日志
     logger.debug(ctx, "这是调试信息")
     logger.info( "服务启动成功")
-    logger.warning(ctx, "内存使用率较高")
-    logger.error(ctx, "数据库连接失败")
+    logger.warning( "内存使用率较高")
+    logger.error( "数据库连接失败")
     logger.critical(ctx, "系统即将崩溃")
     
     print("✓ 基础日志记录完成")
@@ -134,7 +134,7 @@ def exception_handling():
         raise ValueError("无效的用户ID")
         
     except ValueError as e:
-        logger.error(ctx, "业务逻辑错误", extra={
+        logger.error( "业务逻辑错误", extra={
             "error_type": "ValueError",
             "error_message": str(e),
             "user_id": 12345

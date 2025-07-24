@@ -55,7 +55,7 @@ class HttpClient:
         self.config = self._load_config(config)
         self.session = self._create_session()
         self.context = py_sdk.create_context()
-        logger.info(self.context,"HTTP 客户端初始化完成")
+        logger.info("HTTP 客户端初始化完成")
     
     def _load_config(self, config: Dict[str, Any] = None) -> Dict[str, Any]:
         """加载配置"""
@@ -71,12 +71,12 @@ class HttpClient:
                 nacos_data = json.loads(nacos_config)
                 result = DEFAULT_CONFIG.copy()
                 result.update(nacos_data)
-                logger.info(self.context,"从 Nacos 加载 HTTP 配置成功")
+                logger.info("从 Nacos 加载 HTTP 配置成功")
                 return result
         except Exception as e:
             logger.warning(self.context, f"从 Nacos 加载 HTTP 配置失败: {str(e)}")
         
-        logger.info(self.context,"使用默认 HTTP 配置")
+        logger.info("使用默认 HTTP 配置")
         return DEFAULT_CONFIG.copy()
     
     def _create_session(self) -> requests.Session:

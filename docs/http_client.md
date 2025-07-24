@@ -188,12 +188,12 @@ def process_user_request(user_id):
     ctx = create_context()
     
     try:
-        logger.info(ctx, "开始处理用户请求", extra={"user_id": user_id})
+        logger.info( "开始处理用户请求", extra={"user_id": user_id})
         
         # 业务逻辑处理
         user_data = query_user_data(user_id)
         
-        logger.info(ctx, "用户请求处理成功", extra={
+        logger.info( "用户请求处理成功", extra={
             "user_id": user_id,
             "user_name": user_data.get("name")
         })
@@ -206,14 +206,14 @@ def process_user_request(user_id):
         )
         
     except UserNotFoundError:
-        logger.warning(ctx, "用户不存在", extra={"user_id": user_id})
+        logger.warning( "用户不存在", extra={"user_id": user_id})
         return create_response(
             context=ctx,
             code=ROOM_NOT_FOUND  # 复用现有状态码
         )
         
     except Exception as e:
-        logger.error(ctx, "处理用户请求失败", extra={
+        logger.error( "处理用户请求失败", extra={
             "user_id": user_id,
             "error": str(e)
         })

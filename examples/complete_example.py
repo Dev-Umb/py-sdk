@@ -77,7 +77,7 @@ def initialize_system():
     logger = get_logger("system")
     ctx = create_context()
     
-    logger.info(ctx, "系统初始化完成", extra={
+    logger.info( "系统初始化完成", extra={
         "components": ["context", "logger", "http_client", "nacos_sdk"],
         "version": "1.0.0"
     })
@@ -96,7 +96,7 @@ def register_service():
         "version": "1.0.0"
     }
     
-    logger.info(ctx, "开始注册服务", extra=service_info)
+    logger.info( "开始注册服务", extra=service_info)
     
     success = registerNacos(
         service_name=service_info["name"],
@@ -110,10 +110,10 @@ def register_service():
     
     if success:
         print(f"✅ 服务 {service_info['name']} 注册成功")
-        logger.info(ctx, "服务注册成功")
+        logger.info( "服务注册成功")
     else:
         print(f"❌ 服务 {service_info['name']} 注册失败")
-        logger.error(ctx, "服务注册失败")
+        logger.error( "服务注册失败")
     
     return service_info
 
@@ -123,7 +123,7 @@ def load_configuration():
     logger = get_logger("config")
     ctx = create_context()
     
-    logger.info(ctx, "开始加载配置")
+    logger.info( "开始加载配置")
     
     # 尝试从 Nacos 获取配置
     config_items = {
@@ -137,13 +137,13 @@ def load_configuration():
         config_value = get_config(data_id, group)
         if config_value:
             config[key] = config_value
-            logger.info(ctx, "配置加载成功", extra={
+            logger.info( "配置加载成功", extra={
                 "config_key": key,
                 "data_id": data_id
             })
             print(f"   ✅ {key} 配置加载成功")
         else:
-            logger.warning(ctx, "配置不存在", extra={
+            logger.warning( "配置不存在", extra={
                 "config_key": key,
                 "data_id": data_id
             })
@@ -156,7 +156,7 @@ def load_configuration():
             "redis": {"host": "localhost", "port": 6379},
             "app": {"debug": True, "max_connections": 100}
         }
-        logger.info(ctx, "使用默认配置")
+        logger.info( "使用默认配置")
         print("   ✅ 使用默认配置")
     
     return config
@@ -177,7 +177,7 @@ def simulate_web_api_service(config):
     for request in api_requests:
         ctx = create_context()
         
-        logger.info(ctx, "收到 API 请求", extra={
+        logger.info( "收到 API 请求", extra={
             "method": request["method"],
             "path": request["path"],
             "user_agent": "py_sdk_demo/1.0.0"
@@ -186,7 +186,7 @@ def simulate_web_api_service(config):
         # 处理请求
         response = handle_api_request(ctx, request)
         
-        logger.info(ctx, "API 请求处理完成", extra={
+        logger.info( "API 请求处理完成", extra={
             "method": request["method"],
             "path": request["path"],
             "response_code": response.code,
@@ -212,7 +212,7 @@ def handle_api_request(ctx, request):
         
         # 参数验证
         if user_id <= 0:
-            logger.warning(ctx, "参数验证失败", extra={"user_id": user_id})
+            logger.warning( "参数验证失败", extra={"user_id": user_id})
             return create_response(
                 context=ctx,
                 code=INVALID_PARAMS,
@@ -221,7 +221,7 @@ def handle_api_request(ctx, request):
         
         # 模拟业务逻辑
         if user_id == 999:
-            logger.warning(ctx, "用户不存在", extra={"user_id": user_id})
+            logger.warning( "用户不存在", extra={"user_id": user_id})
             return create_response(
                 context=ctx,
                 code=USER_NOT_FOUND,
@@ -230,7 +230,7 @@ def handle_api_request(ctx, request):
         
         # 成功响应
         user_data = {"id": user_id, "name": "张三", "status": "active"}
-        logger.info(ctx, "用户信息获取成功", extra={"user_id": user_id})
+        logger.info( "用户信息获取成功", extra={"user_id": user_id})
         return create_response(
             context=ctx,
             code=OK,
@@ -242,7 +242,7 @@ def handle_api_request(ctx, request):
         user_data = request.get("data", {})
         new_user = {"id": 12345, **user_data, "created_at": time.time()}
         
-        logger.info(ctx, "用户创建成功", extra={"user_id": new_user["id"]})
+        logger.info( "用户创建成功", extra={"user_id": new_user["id"]})
         return create_response(
             context=ctx,
             code=OK,
@@ -270,14 +270,14 @@ def simulate_microservice_calls():
     
     # 模拟完整的业务流程
     ctx = create_context()
-    logger.info(ctx, "开始业务流程", extra={
+    logger.info( "开始业务流程", extra={
         "flow_name": "order_processing",
         "services_count": len(services)
     })
     
     for i, service in enumerate(services, 1):
         # 模拟服务调用
-        logger.info(ctx, "调用微服务", extra={
+        logger.info( "调用微服务", extra={
             "service_name": service["name"],
             "operation": service["operation"],
             "step": i,
@@ -299,14 +299,14 @@ def simulate_microservice_calls():
             }
         )
         
-        logger.info(ctx, "微服务调用成功", extra={
+        logger.info( "微服务调用成功", extra={
             "service_name": service["name"],
             "response_code": response.code
         })
         
         print(f"   ✅ {service['name']} - {service['operation']}")
     
-    logger.info(ctx, "业务流程完成", extra={
+    logger.info( "业务流程完成", extra={
         "flow_name": "order_processing",
         "status": "completed"
     })
@@ -318,7 +318,7 @@ def cleanup_resources(service_info):
     logger = get_logger("cleanup")
     ctx = create_context()
     
-    logger.info(ctx, "开始清理资源")
+    logger.info( "开始清理资源")
     
     # 注销服务
     success = unregisterNacos(
@@ -328,12 +328,12 @@ def cleanup_resources(service_info):
     
     if success:
         print(f"✅ 服务 {service_info['name']} 注销成功")
-        logger.info(ctx, "服务注销成功")
+        logger.info( "服务注销成功")
     else:
         print(f"❌ 服务 {service_info['name']} 注销失败")
-        logger.error(ctx, "服务注销失败")
+        logger.error( "服务注销失败")
     
-    logger.info(ctx, "资源清理完成")
+    logger.info( "资源清理完成")
     print("✅ 资源清理完成")
 
 

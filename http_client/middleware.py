@@ -8,9 +8,7 @@ HTTP 中间件
 import logging
 from typing import Callable, Any
 from ..context.manager import create_context_from_request, set_context, get_current_context
-from ..logger.manager import get_logger
-
-logger = get_logger("py_sdk.http.middleware")
+from ..logger import logger
 
 
 def create_fastapi_middleware():
@@ -35,7 +33,7 @@ def create_fastapi_middleware():
         set_context(ctx)
         
         # 记录请求开始日志
-        logger.info(ctx, f"收到请求: {request.method} {request.url}")
+        logger.info( f"收到请求: {request.method} {request.url}")
         
         try:
             # 执行请求处理
@@ -45,7 +43,7 @@ def create_fastapi_middleware():
             response.headers["X-Trace-Id"] = ctx.trace_id
             
             # 记录请求完成日志
-            logger.info(ctx, f"请求完成: {request.method} {request.url} - {response.status_code}")
+            logger.info( f"请求完成: {request.method} {request.url} - {response.status_code}")
             
             return response
             
@@ -82,7 +80,7 @@ def create_flask_middleware(app):
         set_context(ctx)
         
         # 记录请求开始日志
-        logger.info(ctx, f"收到请求: {request.method} {request.url}")
+        logger.info( f"收到请求: {request.method} {request.url}")
     
     @app.after_request
     def after_request(response):
@@ -95,7 +93,7 @@ def create_flask_middleware(app):
             response.headers["X-Trace-Id"] = ctx.trace_id
             
             # 记录请求完成日志
-            logger.info(ctx, f"请求完成: {request.method} {request.url} - {response.status_code}")
+            logger.info( f"请求完成: {request.method} {request.url} - {response.status_code}")
         
         return response
     
@@ -143,7 +141,7 @@ def create_django_middleware():
             set_context(ctx)
             
             # 记录请求开始日志
-            logger.info(ctx, f"收到请求: {request.method} {request.get_full_path()}")
+            logger.info( f"收到请求: {request.method} {request.get_full_path()}")
             
             try:
                 # 执行请求处理
@@ -153,7 +151,7 @@ def create_django_middleware():
                 response["X-Trace-Id"] = ctx.trace_id
                 
                 # 记录请求完成日志
-                logger.info(ctx, f"请求完成: {request.method} {request.get_full_path()} - {response.status_code}")
+                logger.info( f"请求完成: {request.method} {request.get_full_path()} - {response.status_code}")
                 
                 return response
                 
@@ -197,7 +195,7 @@ def create_tornado_middleware():
             set_context(ctx)
             
             # 记录请求开始日志
-            logger.info(ctx, f"收到请求: {self.request.method} {self.request.uri}")
+            logger.info( f"收到请求: {self.request.method} {self.request.uri}")
         
         def on_finish(self):
             """请求完成阶段"""
@@ -207,7 +205,7 @@ def create_tornado_middleware():
                 self.set_header("X-Trace-Id", ctx.trace_id)
                 
                 # 记录请求完成日志
-                logger.info(ctx, f"请求完成: {self.request.method} {self.request.uri} - {self.get_status()}")
+                logger.info( f"请求完成: {self.request.method} {self.request.uri} - {self.get_status()}")
         
         def write_error(self, status_code, **kwargs):
             """错误处理"""
@@ -249,7 +247,7 @@ class WSGIMiddleware:
         set_context(ctx)
         
         # 记录请求开始日志
-        logger.info(ctx, f"收到请求: {request.method} {request.url}")
+        logger.info( f"收到请求: {request.method} {request.url}")
         
         def new_start_response(status, response_headers, exc_info=None):
             # 添加 TraceID 到响应头
@@ -257,7 +255,7 @@ class WSGIMiddleware:
             
             # 记录请求完成日志
             status_code = int(status.split()[0])
-            logger.info(ctx, f"请求完成: {request.method} {request.url} - {status_code}")
+            logger.info( f"请求完成: {request.method} {request.url} - {status_code}")
             
             return start_response(status, response_headers, exc_info)
         

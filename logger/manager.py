@@ -75,6 +75,7 @@ class AsyncTLSHandler(logging.Handler):
     - 队列缓冲，处理高并发
     - 自动重试机制
     - 优雅关闭
+    - 防御性保护，避免被意外清除
     """
     
     def __init__(self, config: Dict[str, Any], topic_id: str = None, service_name: str = None):
@@ -83,6 +84,7 @@ class AsyncTLSHandler(logging.Handler):
         self.topic_id = topic_id or config.get("topic_id", "")
         self.service_name = service_name or config.get("service_name", "")
         self.client = None
+        self._is_closing = False  # 防止重复关闭
         
         # 性能配置
         self.batch_size = config.get("batch_size", 100)  # 批量发送大小
@@ -145,6 +147,7 @@ class AsyncTLSHandler(logging.Handler):
     
     def _parse_tls_config(self) -> Dict[str, str]:
         """解析 TLS 配置"""
+        # 优先使用直接传入的配置
         if "endpoint" in self.config:
             return {
                 "endpoint": self.config.get("endpoint", ""),
@@ -154,47 +157,8 @@ class AsyncTLSHandler(logging.Handler):
                 "token": self.config.get("token", "")
             }
         
-        try:
-            from nacos_sdk.api import get_config
-            import json
-            
-            tls_config = get_config("tls.log.config")
-            if tls_config:
-                config_data = json.loads(tls_config)
-                
-                if "VOLCENGINE_ENDPOINT" in config_data:
-                    return {
-                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
-                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
-                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
-                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
-                        "token": config_data.get("VOLCENGINE_TOKEN", "")
-                    }
-            
-            volcengine_config = get_config("volcengine.json")
-            if volcengine_config:
-                config_data = json.loads(volcengine_config)
-                
-                if "VOLCENGINE_ENDPOINT" in config_data:
-                    return {
-                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
-                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
-                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
-                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
-                        "token": config_data.get("VOLCENGINE_TOKEN", "")
-                    }
-                else:
-                    return {
-                        "endpoint": config_data.get("endpoint", ""),
-                        "access_key_id": config_data.get("access_key_id", ""),
-                        "access_key_secret": config_data.get("access_key_secret", ""),
-                        "region": config_data.get("region", "cn-beijing"),
-                        "token": config_data.get("token", "")
-                    }
-            
-        except Exception as e:
-            logging.getLogger("py_sdk.logger").debug(f"从 Nacos 获取火山引擎配置失败: {str(e)}")
-        
+        # 如果没有直接配置，返回空字典，让LoggerManager处理Nacos配置加载
+        logging.getLogger("py_sdk.logger").debug("使用LoggerManager预加载的TLS配置")
         return {}
     
     def _start_workers(self):
@@ -326,6 +290,10 @@ class AsyncTLSHandler(logging.Handler):
     
     def close(self):
         """关闭处理器"""
+        if self._is_closing:
+            return  # 防止重复关闭
+        
+        self._is_closing = True
         logging.getLogger("py_sdk.logger").info("正在关闭异步TLS日志处理器...")
         
         # 发送关闭信号
@@ -339,7 +307,7 @@ class AsyncTLSHandler(logging.Handler):
                 pass
         
         # 等待工作线程完成
-        self.executor.shutdown(wait=True, timeout=30)
+        self.executor.shutdown(wait=True)
         
         logging.getLogger("py_sdk.logger").info("异步TLS日志处理器已关闭")
         super().close()
@@ -399,6 +367,7 @@ class SyncTLSHandler(logging.Handler):
     
     def _parse_tls_config(self) -> Dict[str, str]:
         """解析 TLS 配置，支持多种格式"""
+        # 优先使用直接传入的配置
         if "endpoint" in self.config:
             return {
                 "endpoint": self.config.get("endpoint", ""),
@@ -408,47 +377,8 @@ class SyncTLSHandler(logging.Handler):
                 "token": self.config.get("token", "")
             }
         
-        try:
-            from nacos_sdk.api import get_config
-            import json
-            
-            tls_config = get_config("tls.log.config")
-            if tls_config:
-                config_data = json.loads(tls_config)
-                
-                if "VOLCENGINE_ENDPOINT" in config_data:
-                    return {
-                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
-                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
-                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
-                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
-                        "token": config_data.get("VOLCENGINE_TOKEN", "")
-                    }
-            
-            volcengine_config = get_config("volcengine.json")
-            if volcengine_config:
-                config_data = json.loads(volcengine_config)
-                
-                if "VOLCENGINE_ENDPOINT" in config_data:
-                    return {
-                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
-                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
-                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
-                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
-                        "token": config_data.get("VOLCENGINE_TOKEN", "")
-                    }
-                else:
-                    return {
-                        "endpoint": config_data.get("endpoint", ""),
-                        "access_key_id": config_data.get("access_key_id", ""),
-                        "access_key_secret": config_data.get("access_key_secret", ""),
-                        "region": config_data.get("region", "cn-beijing"),
-                        "token": config_data.get("token", "")
-                    }
-            
-        except Exception as e:
-            logging.getLogger("py_sdk.logger").info(f"从 Nacos 获取火山引擎配置失败: {str(e)}")
-        
+        # 如果没有直接配置，返回空字典，让LoggerManager处理Nacos配置加载
+        logging.getLogger("py_sdk.logger").debug("使用LoggerManager预加载的TLS配置")
         return {}
 
     def emit(self, record):
@@ -611,13 +541,20 @@ class LoggerManager:
     
     def _load_volcengine_config(self):
         """加载火山引擎配置"""
+        # 只在 TLS 处理器启用时才加载配置
+        if not self.config.get("handlers", {}).get("tls", {}).get("enabled", False):
+            logging.getLogger("py_sdk.logger").debug("TLS处理器未启用，跳过火山引擎配置加载")
+            return
+        
+        tls_config = self.config["handlers"]["tls"]
+        config_data = None
+        
         try:
-            from nacos_sdk.api import get_config
+            from ..nacos_sdk.api import get_config
             import json
             
             # 首先尝试从 tls.log.config 获取配置
             tls_log_config = get_config("tls.log.config")
-            config_data = None
             
             if tls_log_config:
                 config_data = json.loads(tls_log_config)
@@ -629,49 +566,66 @@ class LoggerManager:
                     config_data = json.loads(volcengine_config)
                     logging.getLogger("py_sdk.logger").info("从 Nacos volcengine.json 加载火山引擎配置（兼容模式）")
             
-            # 如果获取到配置且TLS处理器已启用，自动配置火山引擎参数
-            if config_data and self.config.get("handlers", {}).get("tls", {}).get("enabled", False):
-                tls_config = self.config["handlers"]["tls"]
-                
-                # 支持 VOLCENGINE_ 前缀格式
-                if "VOLCENGINE_ENDPOINT" in config_data:
-                    tls_config.update({
-                        "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
-                        "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
-                        "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
-                        "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
-                        "token": config_data.get("VOLCENGINE_TOKEN", "")
-                    })
-                
-                # 支持旧格式（直接字段名）
-                elif "endpoint" in config_data:
-                    tls_config.update({
-                        "endpoint": config_data.get("endpoint", ""),
-                        "access_key_id": config_data.get("access_key_id", ""),
-                        "access_key_secret": config_data.get("access_key_secret", ""),
-                        "region": config_data.get("region", "cn-beijing"),
-                        "token": config_data.get("token", "")
-                    })
-                
-                # 设置 TopicID 和 ServiceName（如果在初始化时提供了）
-                if self.topic_id:
-                    tls_config["topic_id"] = self.topic_id
-                
-                if self.service_name:
-                    tls_config["service_name"] = self.service_name
-                
-                logging.getLogger("py_sdk.logger").info("火山引擎 TLS 配置加载完成")
+            # 检查是否必须依赖Nacos配置
+            if not config_data:
+                error_msg = "无法从Nacos获取火山引擎TLS配置 (tls.log.config 或 volcengine.json)，TLS日志功能无法使用"
+                logging.getLogger("py_sdk.logger").error(error_msg)
+                raise Exception(error_msg)
+            
+            # 配置火山引擎参数
+            # 支持 VOLCENGINE_ 前缀格式
+            if "VOLCENGINE_ENDPOINT" in config_data:
+                tls_config.update({
+                    "endpoint": config_data.get("VOLCENGINE_ENDPOINT", ""),
+                    "access_key_id": config_data.get("VOLCENGINE_ACCESS_KEY_ID", ""),
+                    "access_key_secret": config_data.get("VOLCENGINE_ACCESS_KEY_SECRET", ""),
+                    "region": config_data.get("VOLCENGINE_REGION", "cn-beijing"),
+                    "token": config_data.get("VOLCENGINE_TOKEN", "")
+                })
+            
+            # 支持旧格式（直接字段名）
+            elif "endpoint" in config_data:
+                tls_config.update({
+                    "endpoint": config_data.get("endpoint", ""),
+                    "access_key_id": config_data.get("access_key_id", ""),
+                    "access_key_secret": config_data.get("access_key_secret", ""),
+                    "region": config_data.get("region", "cn-beijing"),
+                    "token": config_data.get("token", "")
+                })
+            else:
+                error_msg = "Nacos配置中缺少火山引擎端点信息 (endpoint 或 VOLCENGINE_ENDPOINT)"
+                logging.getLogger("py_sdk.logger").error(error_msg)
+                raise Exception(error_msg)
+            
+            # 强制覆盖 TopicID 和 ServiceName（用户传入的配置优先）
+            if self.topic_id:
+                tls_config["topic_id"] = self.topic_id
+                logging.getLogger("py_sdk.logger").info(f"使用用户指定的TopicID: {self.topic_id}")
+            
+            if self.service_name:
+                tls_config["service_name"] = self.service_name
+                logging.getLogger("py_sdk.logger").info(f"使用用户指定的ServiceName: {self.service_name}")
+            
+            # 验证必要的配置项
+            required_fields = ["endpoint", "access_key_id", "access_key_secret"]
+            missing_fields = [field for field in required_fields if not tls_config.get(field)]
+            if missing_fields:
+                error_msg = f"火山引擎TLS配置缺少必要字段: {missing_fields}"
+                logging.getLogger("py_sdk.logger").error(error_msg)
+                raise Exception(error_msg)
+            
+            if not tls_config.get("topic_id"):
+                error_msg = "TopicID未设置，无法发送日志到火山引擎TLS"
+                logging.getLogger("py_sdk.logger").error(error_msg)
+                raise Exception(error_msg)
+            
+            logging.getLogger("py_sdk.logger").info("火山引擎 TLS 配置加载完成")
                         
         except Exception as e:
-            # 只在 TLS 处理器启用时才记录警告
-            if self.config.get("handlers", {}).get("tls", {}).get("enabled", False):
-                logging.getLogger("py_sdk.logger").warning(
-                    f"加载火山引擎配置失败: {str(e)}"
-                )
-            else:
-                logging.getLogger("py_sdk.logger").debug(
-                    f"跳过火山引擎配置加载: {str(e)}"
-                )
+            logging.getLogger("py_sdk.logger").error(f"加载火山引擎配置失败: {str(e)}")
+            # 禁用TLS处理器，避免后续错误
+            self.config["handlers"]["tls"]["enabled"] = False
+            raise e
     
     def _setup_handlers(self):
         """设置日志处理器"""
@@ -753,6 +707,106 @@ class LoggerManager:
         
         logging.getLogger("py_sdk.logger").info("日志管理器已关闭")
     
+    def _setup_tls_handler(self):
+        """单独设置TLS处理器"""
+        if not self.config.get("handlers", {}).get("tls", {}).get("enabled", False):
+            return
+        
+        root_logger = logging.getLogger()
+        
+        # 移除现有的TLS处理器
+        for handler in root_logger.handlers[:]:
+            if isinstance(handler, (AsyncTLSHandler, SyncTLSHandler)):
+                handler.close()
+                root_logger.removeHandler(handler)
+        
+        # 创建格式化器
+        formatter = TraceIDFormatter(self.config["format"])
+        
+        # 添加新的TLS处理器
+        tls_config = self.config["handlers"]["tls"]
+        
+        # 检查是否使用同步模式
+        use_sync = tls_config.get("sync_mode", False)
+        
+        if use_sync:
+            # 使用同步处理器（原版本）
+            tls_handler = SyncTLSHandler(
+                config=tls_config,
+                topic_id=self.topic_id or tls_config.get("topic_id"),
+                service_name=self.service_name or tls_config.get("service_name")
+            )
+            logging.getLogger("py_sdk.logger").info("使用同步TLS日志处理器")
+        else:
+            # 使用异步处理器（默认）
+            tls_handler = AsyncTLSHandler(
+                config=tls_config,
+                topic_id=self.topic_id or tls_config.get("topic_id"),
+                service_name=self.service_name or tls_config.get("service_name")
+            )
+            logging.getLogger("py_sdk.logger").info("使用异步TLS日志处理器")
+        
+        tls_handler.setLevel(getattr(logging, tls_config.get("level", "INFO").upper()))
+        tls_handler.setFormatter(formatter)
+        root_logger.addHandler(tls_handler)
+        
+        # 保存TLS处理器引用，用于关闭时清理
+        self.tls_handler = tls_handler
+    
+    def _setup_tls_handler_force(self):
+        """强制设置TLS处理器，即使已经存在也会重新创建"""
+        if not self.config.get("handlers", {}).get("tls", {}).get("enabled", False):
+            return
+        
+        root_logger = logging.getLogger()
+        
+        # 强制移除所有现有的TLS处理器
+        handlers_to_remove = []
+        for handler in root_logger.handlers:
+            if isinstance(handler, (AsyncTLSHandler, SyncTLSHandler)):
+                handlers_to_remove.append(handler)
+        
+        for handler in handlers_to_remove:
+            try:
+                handler.close()
+            except:
+                pass  # 忽略关闭错误
+            root_logger.removeHandler(handler)
+        # 创建格式化器
+        formatter = TraceIDFormatter(self.config["format"])
+        
+        # 添加新的TLS处理器
+        tls_config = self.config["handlers"]["tls"]
+        
+        # 检查是否使用同步模式
+        use_sync = tls_config.get("sync_mode", False)
+        
+        if use_sync:
+            # 使用同步处理器（原版本）
+            tls_handler = SyncTLSHandler(
+                config=tls_config,
+                topic_id=self.topic_id or tls_config.get("topic_id"),
+                service_name=self.service_name or tls_config.get("service_name")
+            )
+            logging.getLogger("py_sdk.logger").info("强制使用同步TLS日志处理器")
+        else:
+            # 使用异步处理器（默认）
+            tls_handler = AsyncTLSHandler(
+                config=tls_config,
+                topic_id=self.topic_id or tls_config.get("topic_id"),
+                service_name=self.service_name or tls_config.get("service_name")
+            )
+            logging.getLogger("py_sdk.logger").info("强制使用异步TLS日志处理器")
+        
+        tls_handler.setLevel(getattr(logging, tls_config.get("level", "INFO").upper()))
+        tls_handler.setFormatter(formatter)
+        root_logger.addHandler(tls_handler)
+        
+        # 保存TLS处理器引用，用于关闭时清理
+        self.tls_handler = tls_handler
+        
+        logging.getLogger("py_sdk.logger").info("TLS处理器强制重新添加完成")
+    
     def get_logger(self, name: str) -> SDKLogger:
         """获取日志记录器"""
         if name not in self.loggers:
@@ -783,7 +837,29 @@ def init_logger_manager(config: Dict[str, Any], topic_id: str = None, service_na
         _global_logger_name = logger_name or "py_sdk"
         _global_logger = _logger_manager.get_logger(_global_logger_name)
     else:
-        logging.getLogger("py_sdk.logger").warning("日志管理器已经初始化，忽略重复初始化")
+        # 如果已经初始化但提供了新的TLS配置，尝试重新配置TLS
+        if config.get("handlers", {}).get("tls", {}).get("enabled", False) and (topic_id or service_name):
+            logging.getLogger("py_sdk.logger").info("检测到TLS配置更新，强制重新配置TLS日志处理器")
+            
+            # 更新LoggerManager的topic_id和service_name
+            if topic_id:
+                _logger_manager.topic_id = topic_id
+            if service_name:
+                _logger_manager.service_name = service_name
+            
+            # 重新加载TLS配置
+            try:
+                _logger_manager._merge_config(config)
+                _logger_manager._load_volcengine_config()
+                
+                # 强制重新设置TLS处理器，即使已经存在
+                _logger_manager._setup_tls_handler_force()
+                
+                logging.getLogger("py_sdk.logger").info("TLS日志处理器强制重新配置完成")
+            except Exception as e:
+                logging.getLogger("py_sdk.logger").error(f"TLS日志处理器重新配置失败: {e}")
+        else:
+            logging.getLogger("py_sdk.logger").warning("日志管理器已经初始化，忽略重复初始化")
 
 
 def is_logger_initialized() -> bool:

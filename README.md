@@ -38,7 +38,7 @@ ctx = create_context()
 
 # 记录日志（自动包含 TraceID）
 logger = get_logger("my-service")
-logger.info(ctx, "服务启动成功")
+logger.info( "服务启动成功")
 
 # 输出: 2025-01-03 18:40:00,123 - my-service - INFO - [abc123def456] - 服务启动成功
 ```
@@ -65,7 +65,7 @@ registerNacos(
 ctx = create_context()
 logger = get_logger("my-service")
 
-logger.info(ctx, "处理用户请求", extra={"user_id": 123})
+logger.info( "处理用户请求", extra={"user_id": 123})
 
 # 4. 创建标准响应
 response = create_response(
@@ -107,7 +107,7 @@ init_logger_manager()
 
 # 记录日志
 logger = get_logger("my-service")
-logger.info(ctx, "用户登录", extra={"user_id": 123})
+logger.info( "用户登录", extra={"user_id": 123})
 ```
 
 **📖 详细文档**: [docs/logger.md](docs/logger.md)  
@@ -312,7 +312,7 @@ registerNacos(
 
 logger = get_logger(__name__)
 ctx = create_context()
-logger.info(ctx, "应用启动成功")
+logger.info( "应用启动成功")
 ```
 
 ### 3. 业务服务
@@ -328,7 +328,7 @@ logger = get_logger(__name__)
 def get_user_by_id(user_id):
     ctx = get_current_context()
     
-    logger.info(ctx, "查询用户", extra={"user_id": user_id})
+    logger.info( "查询用户", extra={"user_id": user_id})
     
     if user_id <= 0:
         return create_response(
